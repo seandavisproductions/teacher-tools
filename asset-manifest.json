@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/teacher-tools/static/css/main.aa5c7b31.css",
+    "main.js": "/teacher-tools/static/js/main.abffc925.js",
+    "static/js/453.d32a3900.chunk.js": "/teacher-tools/static/js/453.d32a3900.chunk.js",
+    "index.html": "/teacher-tools/index.html",
+    "main.aa5c7b31.css.map": "/teacher-tools/static/css/main.aa5c7b31.css.map",
+    "main.abffc925.js.map": "/teacher-tools/static/js/main.abffc925.js.map",
+    "453.d32a3900.chunk.js.map": "/teacher-tools/static/js/453.d32a3900.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.aa5c7b31.css",
+    "static/js/main.abffc925.js"
+  ]
+}
