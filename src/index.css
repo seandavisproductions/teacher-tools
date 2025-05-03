@@ -1,13 +1,153 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Main App Layout for the teacher application */
+.teacher-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 20px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.header {
+  background-color: #4caf50;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: "Arial", sans-serif;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.header nav {
+  margin-top: 10px;
+}
+
+.header nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  margin: 0 15px;
+}
+
+.header nav a:hover {
+  text-decoration: underline;
+}
+
+.objective-box {
+  background-color: #6b4d4d;
+  border-left: 5px solid #4caf50;
+  padding: 20px;
+  width: 100%; /* Make it span the full container width */
+  font-size: 20px; /* Increase text size */
+  font-family: Arial, sans-serif;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center; /* Center the text */
+}
+
+.objective-box h2 {
+  font-size: 24px; /* Make header text larger */
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.objective-box p {
+  font-size: 18px; /* Increase paragraph text */
+  color: #555;
+}
+/* Navigation container for easy access */
+.nav-container {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  background-color: #f8f8f8;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+/* Container for module buttons, representing different modules for the teacher toolkit */
+.module-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+  margin: 20px 0;
+}
+
+/* Button styling for teacher app with pulsing effect on hover */
+.teacher-button {
+  background-color: #747c33;
+  color: white;
+  border: none;
+  padding: 12px 10px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.teacher-button:hover {
+  animation: pulse 1s infinite;
+}
+
+/* Keyframes for pulse effect */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+.footer a {
+  color: #4caf50;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.input-text {
+  width: 90%;
+  padding: 12px;
+  font-size: 30px;
+  border: 2px solid #4caf50;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.input-text:focus {
+  border-color: #2e8b57;
+  box-shadow: 0px 0px 8px rgba(46, 139, 87, 0.5);
+}
+
+.input-text::placeholder {
+  color: #888;
+  font-style: italic;
 }
