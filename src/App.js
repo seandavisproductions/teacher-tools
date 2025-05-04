@@ -14,7 +14,6 @@ const tools = [
 ];
 
 export default function App() {
-  const [button, setButton] = useState(false);
   const [curOpen, setIsOpen] = useState(null);
   const [qaList, setQaList] = useState([
     { question: "", answer: "" },
