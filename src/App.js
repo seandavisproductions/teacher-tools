@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import "./App.css";
 import "./index.css";
 
@@ -9,6 +10,19 @@ const tools = [
 ];
 
 export default function App() {
+  const FadeInComponent = () => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+      setTimeout(() => setIsVisible(true), 300); // Delay for smoother effect
+    }, []);
+
+    return (
+      <div className={`fade-in ${isVisible ? "visible" : ""}`}>
+        <h1>Welcome to Teacher Toolkit!</h1>
+      </div>
+    );
+  };
   const [curOpen, setIsOpen] = useState(null);
   const [qaList, setQaList] = useState([
     { question: "", answer: "" },
@@ -73,7 +87,7 @@ function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
   return (
     <div className="countdown-container">
       <h3>Countdown Timer</h3>
-      <p className="timer-display">{formatTime(timeLeft)}</p>
+      <p className="digital-clock">{formatTime(timeLeft)}</p>
       <div className="buttons">
         <button onClick={() => startTimer(5 * 60)}>5 Min</button>
         <button onClick={() => startTimer(10 * 60)}>10 Min</button>
@@ -81,6 +95,7 @@ function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
         <button onClick={() => startTimer(20 * 60)}>20 Min</button>
         <input
           className="input-box"
+          style={{ color: "white" }}
           type="number"
           placeholder="Custom minutes"
           onChange={handleCustomTime}
@@ -212,6 +227,9 @@ function ExerciseInstructions({ exercises, setExercises }) {
         </div>
       ) : (
         <div className="steps">
+          <button className="button" onClick={() => setIsStepsMode(false)}>
+            Back to Edit Mode
+          </button>
           <div className="message">
             Exercise {step + 1}: {exercises[step]?.exercise}
           </div>

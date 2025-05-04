@@ -1,4 +1,6 @@
 /* Main App Layout for the teacher application */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap");
+
 .teacher-app {
   display: flex;
   flex-direction: column;
@@ -6,6 +8,18 @@
   margin: 0 auto;
   max-width: 1200px;
   padding: 20px;
+}
+
+.digital-clock {
+  font-family: "Orbitron", sans-serif; /* Digital-looking font */
+  font-size: 35px;
+  color: #00ff00; /* Classic neon green */
+  text-shadow: 0 0 8px #00ff00, 0 0 16px #00ff00;
+  background-color: black;
+  padding: 5px;
+  border-radius: 8px;
+  width: fit-content;
+  text-align: center;
 }
 
 h1,
@@ -408,6 +422,13 @@ h3 {
   text-align: center;
 }
 
-.input-box::placeholder {
-  color: white !important;
+.fade-in {
+  opacity: 0;
+  transform: translateY(10px); /* Slight movement */
+  transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
