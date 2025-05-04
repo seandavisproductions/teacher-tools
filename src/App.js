@@ -1,16 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import "./index.css";
 
 const tools = [
   { title: "Exercise Instructions", id: 1 },
-  {
-    title: "Countdown Timer",
-    id: 2,
-  },
-
-  { title: "Translation", id: 3 },
-  { title: "Exit Ticket", id: 4 },
+  { title: "Translation", id: 2 },
+  { title: "Exit Ticket", id: 3 },
 ];
 
 export default function App() {
@@ -20,10 +15,18 @@ export default function App() {
     { question: "", answer: "" },
     { question: "", answer: "" },
   ]);
+  const [timeLeft, setTimeLeft] = useState(0); // Time in seconds
+  const [isRunning, setIsRunning] = useState(false);
   const [exercises, setExercises] = useState([{ exercise: "" }]);
   return (
     <div className="">
       <Header tools={tools} />
+      <CountdownTimer
+        timeLeft={timeLeft}
+        setTimeLeft={setTimeLeft}
+        isRunning={isRunning}
+        setIsRunning={setIsRunning}
+      />
       <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} />
       {curOpen === 1 && (
         <ExerciseInstructions
@@ -31,10 +34,57 @@ export default function App() {
           setExercises={setExercises}
         />
       )}
-      {curOpen === 2 && <CountdownTimer />}
-      {curOpen === 3 && <Translation />}
-      {curOpen === 4 && <ExitTicket qaList={qaList} setQaList={setQaList} />}
+      {curOpen === 2 && <Translation />}
+      {curOpen === 3 && <ExitTicket qaList={qaList} setQaList={setQaList} />}
       <Footer />
+    </div>
+  );
+}
+function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
+  function startTimer(seconds) {
+    setTimeLeft(seconds);
+    setIsRunning(true);
+  }
+
+  function handleCustomTime(event) {
+    const minutes = parseInt(event.target.value, 10);
+    if (!isNaN(minutes) && minutes > 0) {
+      startTimer(minutes * 60);
+    }
+  }
+
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else {
+      setIsRunning(false);
+    }
+  }, [timeLeft, isRunning]);
+
+  function formatTime(seconds) {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec.toString().padStart(2, "0")}`;
+  }
+
+  return (
+    <div className="countdown-container">
+      <h3>Countdown Timer</h3>
+      <p className="timer-display">{formatTime(timeLeft)}</p>
+      <div className="buttons">
+        <button onClick={() => startTimer(5 * 60)}>5 Min</button>
+        <button onClick={() => startTimer(10 * 60)}>10 Min</button>
+        <button onClick={() => startTimer(15 * 60)}>15 Min</button>
+        <button onClick={() => startTimer(20 * 60)}>20 Min</button>
+        <input
+          type="number"
+          placeholder="Custom minutes"
+          onChange={handleCustomTime}
+        />
+      </div>
     </div>
   );
 }
@@ -51,22 +101,24 @@ function Header({ tools }) {
   }
 
   return (
-    <div className="header">
-      <button
-        onClick={toggleFullscreen}
-        className="fullscreen-btn"
-        style={{ alignItems: "flex-end" }}
-      >
-        🔳 Fullscreen
-      </button>
-      <h1>Teacher Toolkit</h1>
-      Todays Objective:
-      <input
-        className="input-text"
-        type="text"
-        placeholder="e.g To understand how variables work in programming"
-        onChange={(e) => setObjective(e.target.value)}
-      ></input>
+    <div>
+      <div className="header">
+        <button
+          onClick={toggleFullscreen}
+          className="fullscreen-btn"
+          style={{ alignItems: "flex-end" }}
+        >
+          🔳 Fullscreen
+        </button>
+        <h1>Teacher Toolkit</h1>
+        Todays Objective:
+        <input
+          className="input-text"
+          type="text"
+          placeholder="e.g To understand how variables work in programming"
+          onChange={(e) => setObjective(e.target.value)}
+        ></input>
+      </div>
     </div>
   );
 }
@@ -137,11 +189,12 @@ function ExerciseInstructions({ exercises, setExercises }) {
     <div>
       {!isStepsMode ? (
         <div className="flashcards-container">
-          <h3>What would you like your first exercise to be?</h3>
+          <h3>Type the exercise instructions here</h3>
 
           {exercises.map((exercise, index) => (
             <div key={index}>
               <input
+                className="input-box"
                 type="text"
                 placeholder="Enter exercise"
                 value={exercise.exercise}
@@ -149,8 +202,12 @@ function ExerciseInstructions({ exercises, setExercises }) {
               />
             </div>
           ))}
-          <button onClick={addNewExercise}>add another exercise here</button>
-          <button onClick={handleSubmit}>Show in Steps</button>
+          <button className="button" onClick={addNewExercise}>
+            add another exercise here
+          </button>
+          <button className="button" onClick={handleSubmit}>
+            Show in Steps
+          </button>
         </div>
       ) : (
         <div className="steps">
@@ -170,14 +227,6 @@ function ExerciseInstructions({ exercises, setExercises }) {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function CountdownTimer() {
-  return (
-    <div>
-      <UnderDevelopment />;
     </div>
   );
 }
@@ -227,11 +276,12 @@ function ExitTicket({ qaList, setQaList }) {
   return (
     <div>
       {!isFlashcardMode ? (
-        <div className="flashcards-container">
+        <div className="">
           <h2>Enter Questions & Answers</h2>
           {qaList.map((qa, index) => (
             <div key={index}>
               <input
+                className="input-box"
                 type="text"
                 placeholder="Enter question"
                 value={qa.question}
@@ -240,6 +290,7 @@ function ExitTicket({ qaList, setQaList }) {
                 }
               />
               <input
+                className="input-box"
                 type="text"
                 placeholder="Enter answer"
                 value={qa.answer}
@@ -247,12 +298,16 @@ function ExitTicket({ qaList, setQaList }) {
               />
             </div>
           ))}
-          <button onClick={addNewQA}>Add More Questions</button>
-          <button onClick={handleSubmit}>Submit</button>
+          <button className="button" onClick={addNewQA}>
+            Add More Questions
+          </button>
+          <button className="button" onClick={handleSubmit}>
+            Flashcard Mode
+          </button>
         </div>
       ) : (
         <>
-          <button onClick={() => setIsFlashcardMode(false)}>
+          <button className="button" onClick={() => setIsFlashcardMode(false)}>
             Back to Edit Mode
           </button>
           <div className="flashcards">

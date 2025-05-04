@@ -275,6 +275,32 @@ body {
   display: flex;
   justify-content: space-between;
 }
+.button {
+  background-color: #007bff; /* Blue color */
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 5px;
+}
+
+.input-box {
+  width: 250px;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-box:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 8px rgba(0, 91, 255, 0.5);
+}
 
 .buttons button {
   border: none;
@@ -311,4 +337,41 @@ h3 {
 
 .fullscreen-btn:hover {
   background: #5a3ac7;
+}
+
+.countdown-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 1px;
+  background-color: #f4f4f4;
+  border-radius: 1px;
+}
+
+.timer-display {
+  font-size: 25px;
+  font-weight: bold;
+  color: #333;
+}
+
+.buttons button,
+.buttons input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: none;
+  margin: 10px;
+  background: #7950f2;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.buttons button:hover {
+  background: #5a3ac7;
+}
+
+.buttons input {
+  width: 80px;
+  text-align: center;
 }
