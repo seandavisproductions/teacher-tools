@@ -9,11 +9,13 @@
 }
 
 .header {
+  display: flex;
   background-color: #4caf50;
   color: white;
   text-align: center;
+  width: 100%;
   padding: 20px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
   font-family: "Arial", sans-serif;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
@@ -43,7 +45,7 @@
   border-left: 5px solid #4caf50;
   padding: 20px;
   width: 100%; /* Make it span the full container width */
-  font-size: 20px; /* Increase text size */
+  font-size: 18px; /* Increase text size */
   font-family: Arial, sans-serif;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -71,7 +73,7 @@
 }
 
 /* Container for module buttons, representing different modules for the teacher toolkit */
-.module-buttons-container {
+.tool-buttons-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -81,8 +83,8 @@
 }
 
 /* Button styling for teacher app with pulsing effect on hover */
-.teacher-button {
-  background-color: #747c33;
+.teacher-button-close {
+  background-color: #e35252;
   color: white;
   border: none;
   padding: 12px 10px;
@@ -94,7 +96,20 @@
   transition: transform 0.2s ease-in-out;
 }
 
-.teacher-button:hover {
+.teacher-button-open {
+  background-color: #59e352;
+  color: white;
+  border: none;
+  padding: 12px 10px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.teacher-button-close:hover {
   animation: pulse 1s infinite;
 }
 
@@ -150,4 +165,150 @@
 .input-text::placeholder {
   color: #888;
   font-style: italic;
+}
+
+.flashcards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.exit-ticket-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.qa-container {
+  padding: 15px;
+}
+
+.qa-item {
+  margin-bottom: 10px;
+}
+
+.flashcards-container {
+  text-align: center;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-size: 25px;
+  padding: 20px;
+}
+
+.flashcards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: x-large;
+  justify-content: center;
+}
+
+.flashcard {
+  width: 200px;
+  height: 120px;
+  font-size: 40px;
+  border: 2px solid #000000;
+  padding: 10px;
+  text-align: center;
+  background-color: #fff;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.flashcard.selected {
+  background-color: #25ff21;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  color: #333;
+}
+
+.steps {
+  width: 100%;
+  background-color: #f7f7f7;
+  border-radius: 7px;
+  padding: 25px 50px;
+  margin: 20px auto;
+}
+
+.numbers {
+  display: flex;
+  justify-content: space-between;
+}
+
+.numbers > div {
+  height: 40px;
+  aspect-ratio: 1;
+  background-color: #e7e7e7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.numbers .active {
+  background-color: #7950f2;
+  color: #fff;
+}
+
+.message {
+  text-align: center;
+  font-size: 40px;
+  margin: 40px 0;
+  font-weight: bold;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttons button {
+  border: none;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.buttons button span {
+  font-size: 16px;
+  line-height: 1;
+}
+
+h3 {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.fullscreen-btn {
+  background: #7950f2;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.fullscreen-btn:hover {
+  background: #5a3ac7;
 }
