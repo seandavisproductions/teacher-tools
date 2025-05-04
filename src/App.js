@@ -19,7 +19,7 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [exercises, setExercises] = useState([{ exercise: "" }]);
   return (
-    <div className="">
+    <div className="main-content">
       <Header tools={tools} />
       <CountdownTimer
         timeLeft={timeLeft}
@@ -80,6 +80,7 @@ function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
         <button onClick={() => startTimer(15 * 60)}>15 Min</button>
         <button onClick={() => startTimer(20 * 60)}>20 Min</button>
         <input
+          className="input-box"
           type="number"
           placeholder="Custom minutes"
           onChange={handleCustomTime}
@@ -239,18 +240,6 @@ function Translation() {
   );
 }
 
-function Footer() {
-  return (
-    <div className="footer">
-      Designed by{" "}
-      <a href="https://www.seandavisproductions.co.uk">
-        Sean Davis Productions
-      </a>{" "}
-      using React
-    </div>
-  );
-}
-
 function ExitTicket({ qaList, setQaList }) {
   const [selectedId, setSelectedId] = useState(null);
   const [isFlashcardMode, setIsFlashcardMode] = useState(false);
@@ -276,7 +265,7 @@ function ExitTicket({ qaList, setQaList }) {
   return (
     <div>
       {!isFlashcardMode ? (
-        <div className="">
+        <div className="flashcards-container">
           <h2>Enter Questions & Answers</h2>
           {qaList.map((qa, index) => (
             <div key={index}>
@@ -364,6 +353,18 @@ function UnderDevelopment() {
         style={{ display: "block", margin: "auto" }}
       ></img>
       <h2 align="center">{randomItem.text}</h2>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <div className="footer">
+      Designed by{" "}
+      <a href="https://www.seandavisproductions.co.uk">
+        Sean Davis Productions
+      </a>{" "}
+      using React
     </div>
   );
 }
