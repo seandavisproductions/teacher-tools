@@ -94,11 +94,10 @@ function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
         <button onClick={() => startTimer(15 * 60)}>15 Min</button>
         <button onClick={() => startTimer(20 * 60)}>20 Min</button>
         <input
-          className="input-box"
-          style={{ color: "white" }}
-          type="number"
-          placeholder="Custom minutes"
-          onChange={handleCustomTime}
+        className="input-box-1"
+        type="number"
+        placeholder="Custom minutes"
+        onChange={handleCustomTime}
         />
       </div>
     </div>
@@ -339,17 +338,17 @@ function ExitTicket({ qaList, setQaList }) {
 function UnderDevelopment() {
   const randomList = [
     {
-      image: "https://media1.tenor.com/m/bUa1N-13OecAAAAC/baby-run-omg.gif",
+      image: `${process.env.PUBLIC_URL}/babyrunning.gif`,
       text: "Whoops! Hold tight. I'm currently coding. I'll be right back.",
     },
     {
       image:
-        "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWc2MHZxYTNuOHdubXo4MTR0OGpucjJjb3UwM3VoZWtoazc5OXJtZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FY8c5SKwiNf1EtZKGs/giphy.gif",
+        `${process.env.PUBLIC_URL}/giphy (1).gif`,
       text: "Errr... I'll get right on it!",
     },
     {
       image:
-        "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3U5ajZhamZmZ3dtNjBuMGo0bzhuOXRzMnhiazhsNzlxd2pnaG9xayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/w89ak63KNl0nJl80ig/giphy.gif",
+       `${process.env.PUBLIC_URL}/giphy (2).gif`,
       text: "Nothing to see here. Move along.",
     },
   ];
