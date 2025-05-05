@@ -7,9 +7,11 @@ const tools = [
   { title: "Exercise Instructions", id: 1 },
   { title: "Presentation", id: 2 },
   { title: "Exit Ticket", id: 3 },
+  { title: "Sound Board", id: 4 }
 ];
 
 export default function App() {
+  const [embedLink, setEmbedLink] = useState("");
   const FadeInComponent = () => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -48,8 +50,9 @@ export default function App() {
           setExercises={setExercises}
         />
       )}
-      {curOpen === 2 && <Presentation />}
+      {curOpen === 2 && <Presentation embedLink={embedLink} setEmbedLink={setEmbedLink}/>}
       {curOpen === 3 && <ExitTicket qaList={qaList} setQaList={setQaList} />}
+      {curOpen === 4 && <SoundBoard />}
       <Footer />
     </div>
   );
@@ -249,8 +252,8 @@ function ExerciseInstructions({ exercises, setExercises }) {
   );
 }
 
-function Presentation() {
-  const [embedLink, setEmbedLink] = useState("");
+function Presentation({embedLink, setEmbedLink }) {
+  
 
   function handleSubmit() {
     const input = document.getElementById("embed-link").value.trim();
@@ -320,6 +323,12 @@ function Presentation() {
       )}
     </div>
   );
+}
+
+function SoundBoard() {
+  const [soundList, setSoundList] = useState([]);
+  const [soundName, setSoundName] = useState("");
+  return <UnderDevelopment />;
 }
 
 function ExitTicket({ qaList, setQaList }) {

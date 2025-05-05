@@ -261,7 +261,7 @@ h3 {
   border: 2px solid #000000;
   padding: 10px;
   text-align: center;
-  background-color: #fff;
+  background-color: #e35252;
   cursor: pointer;
   transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
 }
@@ -335,15 +335,23 @@ body {
   margin: 5px;
 }
 
+
+
+
 .input-box {
-  width: 250px;
-  padding: 10px;
-  font-size: 16px;
-  border: 2px solid #7950f2;
-  border-radius: 6px;
-  outline: none;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
+   padding: 20px;
+   width: 40%; /* Allow the text box to take full width of its container */
+   max-width: 100%; /* Ensure it doesn't exceed the container width */
+   font-size: 16px;
+   border: 2px solid #7950f2;
+   border-radius: 6px;
+   outline: none;
+   transition: border-color 0.3s, box-shadow 0.3s;
+   margin-bottom: 20px; /* Gap between text boxes */
+   box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  }
+  
+  
 
 .input-box:focus {
   border-color: #7950f2;
