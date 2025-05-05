@@ -5,7 +5,7 @@ import "./index.css";
 
 const tools = [
   { title: "Exercise Instructions", id: 1 },
-  { title: "Translation", id: 2 },
+  { title: "Presentation", id: 2 },
   { title: "Exit Ticket", id: 3 },
 ];
 
@@ -48,7 +48,7 @@ export default function App() {
           setExercises={setExercises}
         />
       )}
-      {curOpen === 2 && <Translation />}
+      {curOpen === 2 && <Presentation />}
       {curOpen === 3 && <ExitTicket qaList={qaList} setQaList={setQaList} />}
       <Footer />
     </div>
@@ -249,10 +249,75 @@ function ExerciseInstructions({ exercises, setExercises }) {
   );
 }
 
-function Translation() {
+function Presentation() {
+  const [embedLink, setEmbedLink] = useState("");
+
+  function handleSubmit() {
+    const input = document.getElementById("embed-link").value.trim();
+
+    // Validate if the input is a valid Google Slides URL
+    if (input.startsWith("https://docs.google.com/presentation/d/")) {
+      const embedUrl = input.replace(
+        /\/edit.*$/,
+        "/embed?start=false&loop=false&delayms=3000"
+      );
+      setEmbedLink(embedUrl);
+    } else {
+      alert("Please enter a valid Google Slides URL.");
+    }
+  }
+
+  function handleFullscreen() {
+    const iframe = document.getElementById("presentation-iframe");
+    if (iframe.requestFullscreen) {
+      iframe.requestFullscreen();
+    } else if (iframe.mozRequestFullScreen) {
+      iframe.mozRequestFullScreen(); // Firefox
+    } else if (iframe.webkitRequestFullscreen) {
+      iframe.webkitRequestFullscreen(); // Chrome, Safari, Opera
+    } else if (iframe.msRequestFullscreen) {
+      iframe.msRequestFullscreen(); // IE/Edge
+    }
+  }
+
   return (
-    <div>
-      <UnderDevelopment />
+    <div className="presentation-container">
+      <h3>Enter Google Slides Embed Link</h3>
+      <input
+        id="embed-link"
+        className="input-box"
+        type="text"
+        placeholder="Paste your Google Slides URL here"
+        style={{ width: "80%", marginBottom: "10px" }}
+      />
+      <button className="button" onClick={handleSubmit}>
+        Submit
+      </button>
+      {embedLink && (
+        <div style={{ position: "relative", marginTop: "20px" }}>
+          <iframe
+            id="presentation-iframe"
+            src={embedLink}
+            frameBorder="0"
+            width="960"
+            height="569"
+            allowFullScreen
+            title="Google Slides Presentation"
+          ></iframe>
+          <button
+            className="button"
+            onClick={handleFullscreen}
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              zIndex: 10,
+            }}
+          >
+            Fullscreen
+          </button>
+        </div>
+      )}
     </div>
   );
 }
