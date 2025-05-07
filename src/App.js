@@ -8,6 +8,7 @@ import { Presentation } from "./Presentation";
 import { SoundBoard } from "./SoundBoard";
 import { ExitTicket } from "./ExitTicket";
 import { Footer } from "./Footer";
+import { FadeInComponent } from "./FadeInComponent";
 
 const tools = [
   { title: "Exercise Instructions", id: 1 },
@@ -27,19 +28,9 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [exercises, setExercises] = useState([{ exercise: "" }]);
   const [embedLink, setEmbedLink] = useState("");
-  const FadeInComponent = () => {
-    const [isVisible, setIsVisible] = useState(false);
+  
+  
 
-    useEffect(() => {
-      setTimeout(() => setIsVisible(true), 300); // Delay for smoother effect
-    }, []);
-
-    return (
-      <div className={`fade-in ${isVisible ? "visible" : ""}`}>
-        <h1>Welcome to Teacher Toolkit!</h1>
-      </div>
-    );
-  };
 
   return (
     <div className="main-content">
@@ -51,15 +42,27 @@ export default function App() {
         setIsRunning={setIsRunning}
       />
       <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} />
+      
+  
+  {curOpen > 0 ? (
+    <>
       {curOpen === 1 && (
         <ExerciseInstructions
           exercises={exercises}
           setExercises={setExercises}
         />
       )}
-      {curOpen === 2 && <Presentation embedLink={embedLink} setEmbedLink={setEmbedLink}/>}
-      {curOpen === 3 && <ExitTicket qaList={qaList} setQaList={setQaList} />}
+      {curOpen === 2 && (
+        <Presentation embedLink={embedLink} setEmbedLink={setEmbedLink}/>
+      )}
+      {curOpen === 3 && (
+        <ExitTicket qaList={qaList} setQaList={setQaList} />
+      )}
       {curOpen === 4 && <SoundBoard />}
+    </>
+  ) : (
+    <FadeInComponent />
+  )}
       <Footer />
     </div>
   );

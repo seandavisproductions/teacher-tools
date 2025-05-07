@@ -12,7 +12,7 @@
 
 .digital-clock {
   font-family: "Orbitron", sans-serif; /* Digital-looking font */
-  font-size: 35px;
+  font-size: 45px;
   color: #00ff00; /* Classic neon green */
   text-shadow: 0 0 8px #00ff00, 0 0 16px #00ff00;
   background-color: black;
@@ -68,6 +68,14 @@ h3 {
   margin: 0;
 }
 
+.welcome {
+  font-size: 50px;
+  text-align: center;
+  padding-top: 20px;
+  vertical-align: middle;
+
+
+}
 .header nav {
   margin-top: 10px;
 }
@@ -201,12 +209,12 @@ h3 {
 }
 
 .input-box-1 {
-  width: 90%;
   color: white;
   padding: 12px;
 }
 
 .input-box-1::placeholder {
+  width: 100%;
   color: white;
 }
 

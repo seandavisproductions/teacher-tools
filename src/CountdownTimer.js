@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+
 export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
   function startTimer(seconds) {
     setTimeLeft(seconds);
@@ -13,6 +14,15 @@ export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning 
     }
   }
 
+
+  useEffect(() => {
+     if (timeLeft === 5) {
+     const audio = new Audio(process.env.PUBLIC_URL + '/696048__musik-fan__up-to-the-top-of-the-hour-beep.wav');
+     audio.play();
+     }
+    }, [timeLeft]);
+    
+
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       const timer = setInterval(() => {
@@ -23,6 +33,8 @@ export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning 
       setIsRunning(false);
     }
   }, [timeLeft, isRunning]);
+
+
 
   function formatTime(seconds) {
     const min = Math.floor(seconds / 60);
@@ -42,7 +54,7 @@ export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning 
         <input
           className="input-box-1"
           type="number"
-          placeholder="Custom minutes"
+          placeholder="Custom"
           onChange={handleCustomTime} />
       </div>
     </div>
