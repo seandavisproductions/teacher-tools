@@ -1,7 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 
 export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
+  
+  const audioRef = useRef(
+    new Audio(process.env.PUBLIC_URL + '/696048__musik-fan__up-to-the-top-of-the-hour-beep.wav')
+  );
+
   function startTimer(seconds) {
     setTimeLeft(seconds);
     setIsRunning(true);
@@ -17,8 +22,7 @@ export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning 
 
   useEffect(() => {
      if (timeLeft === 5) {
-     const audio = new Audio(process.env.PUBLIC_URL + '/696048__musik-fan__up-to-the-top-of-the-hour-beep.wav');
-     audio.play();
+     audioRef.current.play();
      }
     }, [timeLeft]);
     
