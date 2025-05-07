@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/teacher-tools/static/css/main.84dbf257.css",
-    "main.js": "/teacher-tools/static/js/main.933f68bb.js",
+    "main.css": "/teacher-tools/static/css/main.7bea5aee.css",
+    "main.js": "/teacher-tools/static/js/main.ed90a7ee.js",
     "static/js/453.d32a3900.chunk.js": "/teacher-tools/static/js/453.d32a3900.chunk.js",
     "index.html": "/teacher-tools/index.html",
-    "main.84dbf257.css.map": "/teacher-tools/static/css/main.84dbf257.css.map",
-    "main.933f68bb.js.map": "/teacher-tools/static/js/main.933f68bb.js.map",
+    "main.7bea5aee.css.map": "/teacher-tools/static/css/main.7bea5aee.css.map",
+    "main.ed90a7ee.js.map": "/teacher-tools/static/js/main.ed90a7ee.js.map",
     "453.d32a3900.chunk.js.map": "/teacher-tools/static/js/453.d32a3900.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.84dbf257.css",
-    "static/js/main.933f68bb.js"
+    "static/css/main.7bea5aee.css",
+    "static/js/main.ed90a7ee.js"
   ]
 }
