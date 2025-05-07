@@ -483,7 +483,7 @@ h3 {
   }
 
   .digital-clock {
-    font-size: 10px;
+    font-size: 25px;
     padding: 5px;
   }
 
@@ -515,6 +515,12 @@ h3 {
     color: white;
     cursor: pointer;
     border-radius: 5px;
+  }
+  .welcome {
+    font-size: 25px;
+    text-align: center;
+    padding-top: 20px;
+    vertical-align: middle;
   }
 }
 
@@ -522,7 +528,7 @@ h3 {
 @media only screen and (orientation: landscape) and (max-width: 1024px) {
 
   .digital-clock {
-    font-size: 10px;
+    font-size: 25px;
     padding: 5px;
   }
 
@@ -556,5 +562,10 @@ h3 {
     border-radius: 5px;
   }
 
-
+  .welcome {
+    font-size: 25px;
+    text-align: center;
+    padding-top: 20px;
+    vertical-align: middle;
+  }
 }
