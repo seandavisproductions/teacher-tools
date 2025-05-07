@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
   
-export function FadeInComponent () {
+export function Welcome () {
 const [isVisible, setIsVisible] = useState(false);
 
 useEffect(() => {
@@ -9,7 +9,7 @@ useEffect(() => {
 
 return (
     <div className={`fade-in ${isVisible ? "visible" : ""}`}>
-    <h1 className="welcome">Welcome to the Teacher Toolkit. Click a tool above to start!</h1>
+    <h1 className="welcome">⬆️Welcome to the Teacher Toolkit. Click a tool above to start!⬆️</h1>
     </div>
 );
 };

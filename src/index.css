@@ -12,14 +12,15 @@
 
 .digital-clock {
   font-family: "Orbitron", sans-serif; /* Digital-looking font */
-  font-size: 45px;
+  font-size: 60px;
   color: #00ff00; /* Classic neon green */
   text-shadow: 0 0 8px #00ff00, 0 0 16px #00ff00;
   background-color: black;
-  padding: 5px;
-  border-radius: 8px;
+  padding:10px;
+  border-radius: 10px;
   width: fit-content;
   text-align: center;
+  margin: 2px; /* Use negative margin if you need to shift content */
 }
 
 h1,
@@ -415,18 +416,13 @@ h3 {
   border-radius: 1px;
 }
 
-.timer-display {
-  font-size: 25px;
-  font-weight: bold;
-  color: #333;
-  padding: 0px;
-}
+
 
 .buttons button,
 .buttons input {
   min-width: 30px;
   padding: 8px 12px;
-  font-size: 16px;
+  font-size: 25px;
   border: none;
   margin: 10px;
   background: #7950f2;
@@ -473,4 +469,38 @@ h3 {
 
   font-size: 16px;
   cursor: pointer;
+}
+
+/* For devices with a max width of 600px */
+@media (max-width: 600px) {
+  .teacher-app {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .digital-clock {
+    font-size: 40px;
+    padding: 5px;
+  }
+
+  .countdown-container {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+    padding: 5px;
+  }
+
+  .presentation-container .input-box {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .presentation-container .button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
 }

@@ -26,7 +26,7 @@ export function Header({ tools }) {
         <input
           className="input-text"
           type="text"
-          placeholder="e.g To understand how variables work in programming"
+          placeholder="e.g To understand how to use Teacher Toolkit"
           onChange={(e) => setObjective(e.target.value)}
         ></input>
       </div>

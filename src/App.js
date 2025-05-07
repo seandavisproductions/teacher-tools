@@ -8,7 +8,7 @@ import { Presentation } from "./Presentation";
 import { SoundBoard } from "./SoundBoard";
 import { ExitTicket } from "./ExitTicket";
 import { Footer } from "./Footer";
-import { FadeInComponent } from "./FadeInComponent";
+import { Welcome } from "./Welcome";
 
 const tools = [
   { title: "Exercise Instructions", id: 1 },
@@ -61,7 +61,7 @@ export default function App() {
       {curOpen === 4 && <SoundBoard />}
     </>
   ) : (
-    <FadeInComponent />
+    <Welcome />
   )}
       <Footer />
     </div>
