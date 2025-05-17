@@ -10,6 +10,9 @@ import { ExitTicket } from "./ExitTicket";
 import { Footer } from "./Footer";
 import { Welcome } from "./Welcome";
 
+
+
+
 const tools = [
   { title: "Exercise Instructions", id: 1 },
   { title: "Presentation", id: 2 },
@@ -18,6 +21,7 @@ const tools = [
 ];
 
 export default function App() {
+  const [role, setRole] = useState('student'); // Change to 'teacher' for teachers
   const [curOpen, setIsOpen] = useState(null);
   const [qaList, setQaList] = useState([
     { question: "", answer: "" },
