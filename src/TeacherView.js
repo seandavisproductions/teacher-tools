@@ -10,6 +10,7 @@ import { ExitTicket } from "./ExitTicket";
 import { Footer } from "./Footer";
 import { Welcome } from "./Welcome";
 
+
 const tools = [
   { title: "Exercise Instructions", id: 1 },
   { title: "Presentation", id: 2 },
@@ -18,7 +19,10 @@ const tools = [
 ];
 
 
-export const TeacherView = () => {
+export const TeacherView = ({generateCode, sessionCode}) => {
+  const [curOpen, setCurOpen] = useState("")
+  const [isOpen, setIsOpen] = useState("false")
+  
   return (
     <div>
       <button onClick={generateCode}>Generate Student Code</button>
