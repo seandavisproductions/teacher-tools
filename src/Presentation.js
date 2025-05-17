@@ -1,9 +1,11 @@
-export function Presentation({ embedLink, setEmbedLink }) {
+import { useState } from "react";
 
+export function Presentation() {
+  const [embedLink, setEmbedLink] = useState(""); 
 
   function handleSubmit() {
     const input = document.getElementById("embed-link").value.trim();
-
+  
     // Validate if the input is a valid Google Slides URL
     if (input.startsWith("https://docs.google.com/presentation/d/")) {
       const embedUrl = input.replace(

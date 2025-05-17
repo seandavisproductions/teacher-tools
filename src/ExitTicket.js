@@ -1,8 +1,13 @@
 import { useState } from "react";
 
-export function ExitTicket({ qaList, setQaList }) {
+export function ExitTicket() {
   const [selectedId, setSelectedId] = useState(null);
   const [isFlashcardMode, setIsFlashcardMode] = useState(false);
+  const [qaList, setQaList] = useState([
+    { question: "", answer: "" },
+    { question: "", answer: "" },
+    { question: "", answer: "" },
+  ]);
 
   function handleChange(index, field, value) {
     const updatedQaList = [...qaList];

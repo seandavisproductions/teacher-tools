@@ -1,7 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 
-export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning }) {
+
+export function CountdownTimer() {
+  
+  const [timeLeft, setTimeLeft] = useState(0); // Time in seconds
+   const [isRunning, setIsRunning] = useState(false);
   
   const audioRef = useRef(
     new Audio(process.env.PUBLIC_URL + '/696048__musik-fan__up-to-the-top-of-the-hour-beep.wav')
@@ -49,12 +53,15 @@ export function CountdownTimer({ timeLeft, setTimeLeft, isRunning, setIsRunning 
   return (
     <div className="countdown-container">
       <h3>Countdown Timer</h3>
+      <button className={!isRunning ? "teacher-button-open" : "teacher-button-close"}onClick={() => setIsRunning(!isRunning)}>{!isRunning ? "Start" : "Stop"}</button>
       <p className="digital-clock">{formatTime(timeLeft)}</p>
       <div className="buttons">
         <button onClick={() => startTimer(5 * 60)}>5 Min</button>
         <button onClick={() => startTimer(10 * 60)}>10 Min</button>
         <button onClick={() => startTimer(15 * 60)}>15 Min</button>
         <button onClick={() => startTimer(20 * 60)}>20 Min</button>
+        
+
         <input
           className="input-box-1"
           type="number"

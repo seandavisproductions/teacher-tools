@@ -1,73 +1,32 @@
 import { useState, useEffect } from "react";
-import "./index.css";
-import { Header } from "./Header";
-import { CountdownTimer } from "./CountdownTimer";
-import { Buttons } from "./Buttons";
-import { ExerciseInstructions } from "./ExerciseInstructions";
-import { Presentation } from "./Presentation";
-import { SoundBoard } from "./SoundBoard";
-import { ExitTicket } from "./ExitTicket";
-import { Footer } from "./Footer";
-import { Welcome } from "./Welcome";
 
-
-
-
-const tools = [
-  { title: "Exercise Instructions", id: 1 },
-  { title: "Presentation", id: 2 },
-  { title: "Exit Ticket", id: 3 },
-  { title: "Sound Board", id: 4 }
-];
+import {TeacherView} from './TeacherView';
+import {StudentView} from "./StudentView"; // Importing StudentView component
 
 export default function App() {
-  const [role, setRole] = useState('student'); // Change to 'teacher' for teachers
-  const [curOpen, setIsOpen] = useState(null);
-  const [qaList, setQaList] = useState([
-    { question: "", answer: "" },
-    { question: "", answer: "" },
-    { question: "", answer: "" },
-  ]);
-  const [timeLeft, setTimeLeft] = useState(0); // Time in seconds
-  const [isRunning, setIsRunning] = useState(false);
-  const [exercises, setExercises] = useState([{ exercise: "" }]);
-  const [embedLink, setEmbedLink] = useState("");
-  
-  
+   const [role, setRole] = useState(""); // Empty by default (not chosen yet)
+  const [sessionCode, setSessionCode] = useState(""); // Stores the teacher-generated code
 
+  const generateCode = () => {
+    const newCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+    setSessionCode(newCode);
+  };
 
+  
   return (
-    <div className="main-content">
-      <Header tools={tools} />
-      <CountdownTimer
-        timeLeft={timeLeft}
-        setTimeLeft={setTimeLeft}
-        isRunning={isRunning}
-        setIsRunning={setIsRunning}
-      />
-      <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} />
-      
-  
-  {curOpen > 0 ? (
-    <>
-      {curOpen === 1 && (
-        <ExerciseInstructions
-          exercises={exercises}
-          setExercises={setExercises}
-        />
+<div className="main-content">
+      {/* If no role is selected, show the role selection screen */}
+      {!role ? (
+        <div>
+          <h2>Choose Your Role</h2>
+          <button onClick={() => setRole("teacher")}>Teacher</button>
+          <button onClick={() => setRole("student")}>Student</button>
+        </div>
+      ) : role === "teacher" ? (
+        <TeacherView sessionCode={sessionCode} generateCode={generateCode} />
+      ) : (
+        <StudentView sessionCode={sessionCode} />
       )}
-      {curOpen === 2 && (
-        <Presentation embedLink={embedLink} setEmbedLink={setEmbedLink}/>
-      )}
-      {curOpen === 3 && (
-        <ExitTicket qaList={qaList} setQaList={setQaList} />
-      )}
-      {curOpen === 4 && <SoundBoard />}
-    </>
-  ) : (
-    <Welcome />
-  )}
-      <Footer />
     </div>
   );
 }

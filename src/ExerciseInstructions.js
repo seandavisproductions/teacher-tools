@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-export function ExerciseInstructions({ exercises, setExercises }) {
+export function ExerciseInstructions() {
   const [step, setStep] = useState(0);
   const [isStepsMode, setIsStepsMode] = useState(false);
+  const [exercises, setExercises] = useState([{ exercise: "" }]);
 
   function handleSubmit() {
     setIsStepsMode(true); // Switch to flashcard mode
