@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+const socket = io("https://teacher-toolkit-back-end.onrender.com");
 
 
 
-export function CountdownTimer() {
+export function CountdownTimer({timeLeft, setTimeLeft}) {
   
-  const [timeLeft, setTimeLeft] = useState(0); // Time in seconds
-   const [isRunning, setIsRunning] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  
+  useEffect(() => {
+  socket.on("countdownUpdate", (data) => {
+    setTimeLeft(data.timeLeft);
+  });
+
+  return () => socket.off("countdownUpdate");
+  }, [setTimeLeft]);
   
   const audioRef = useRef(
     new Audio(process.env.PUBLIC_URL + '/696048__musik-fan__up-to-the-top-of-the-hour-beep.wav')
@@ -16,6 +25,9 @@ export function CountdownTimer() {
     setIsRunning(true);
   }
 
+
+
+
   function handleCustomTime(event) {
     const minutes = parseInt(event.target.value, 10);
     if (!isNaN(minutes) && minutes > 0) {
@@ -23,6 +35,7 @@ export function CountdownTimer() {
     }
   }
 
+  
 
   useEffect(() => {
      if (timeLeft === 5) {

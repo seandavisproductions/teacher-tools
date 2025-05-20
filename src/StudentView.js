@@ -1,8 +1,26 @@
 import { useState } from "react";
+import { io } from "socket.io-client";
+import { Footer } from "./Footer";
 
-export const StudentView = ({ sessionCode }) => {
+
+
+
+export const StudentView = ({ sessionCode, setSessionCode, timeLeft }) => {
+  const socket = io("https://teacher-toolkit-back-end.onrender.com");
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const updateStudentDashboard = (data) => {
+  console.log("Updating student view with:", data);
+
+  // Example: Update state with the new session data
+  setSessionCode(data);
+};
+
+socket.on("sessionUpdate", (data) => {
+  console.log("Received update from teacher:", data);
+  updateStudentDashboard(data);
+});
+
 
   const handleSubmit = () => {
     if (inputCode === sessionCode) {
@@ -25,7 +43,11 @@ export const StudentView = ({ sessionCode }) => {
           <button onClick={handleSubmit}>Submit</button>
         </div>
       ) : (
+        <div>
         <h2>Welcome to the Student View!</h2>
+        <Footer />
+        <p className="digital-clock">{formatTime(timeLeft)}</p>
+        </div>
       )}
     </div>
   );

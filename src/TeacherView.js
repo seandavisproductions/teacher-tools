@@ -9,6 +9,9 @@ import { SoundBoard } from "./SoundBoard";
 import { ExitTicket } from "./ExitTicket";
 import { Footer } from "./Footer";
 import { Welcome } from "./Welcome";
+import { io } from "socket.io-client";
+const socket = io("https://teacher-toolkit-back-end.onrender.com");
+
 
 
 const tools = [
@@ -19,18 +22,37 @@ const tools = [
 ];
 
 
-export const TeacherView = ({generateCode, sessionCode}) => {
+export const TeacherView = ({generateCode, sessionCode, setSessionCode, timeLeft, setTimeLeft}) => {
+const sendUpdate = (sessionCode, newData) => {
+  socket.emit("updateSession", { sessionCode, newData });
+};
+
+const startTimer = (seconds) => {
+  socket.emit("startCountdown", { sessionCode, duration: seconds });
+};
+
+
+const handleSessionUpdate = (newData) => {
+  sendUpdate(sessionCode, newData);  // Now updates are sent!
+};
+
+const handleGenerateCode = () => {
+  const newCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+  setSessionCode(newCode);
+  sendUpdate(newCode, { message: "New session code created!" }); 
+};
+
+
   const [curOpen, setCurOpen] = useState("")
-  const [isOpen, setIsOpen] = useState("false")
+  const [isOpen, setIsOpen] = useState(false)
   
   return (
-    <div>
-      <button onClick={generateCode}>Generate Student Code</button>
-      {sessionCode && <p>Student Code: <strong>{sessionCode}</strong></p>}
+  
   <div className="main-content">
       <Header tools={tools} />
-      
-      <CountdownTimer/>
+        <button onClick={handleGenerateCode}>Generate Student Code</button>
+      {sessionCode && <p>Student Code: <strong>{sessionCode}</strong></p>}
+      <CountdownTimer setTimeLeft={setTimeLeft} timeLeft={timeLeft}/>
       <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} />
       
   
@@ -53,6 +75,5 @@ export const TeacherView = ({generateCode, sessionCode}) => {
       <Footer />
     </div>
       
-    </div>
   );
 };
