@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GenerateStudentCode } from "./StudentCode";
+import { GenerateStudentCode } from "./GenerateStudentCode";
 
 export function Header({ tools, sessionCode, setSessionCode, sendUpdate, teacherId }) {
   const [objective, setObjective] = useState("");
