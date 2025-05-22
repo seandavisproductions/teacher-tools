@@ -2,11 +2,11 @@ import { use, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
 import { Register } from "./Register";
 
-export default function Login({ setIsAuthenticated }) {
+export default function Login({ setIsAuthenticated, teacherId, setTeacherId }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [register, setRegister] = useState(false)
-  const [teacherId, setTeacherId] = useState(null);
+  
   
 
 

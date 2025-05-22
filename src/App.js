@@ -8,6 +8,7 @@ export default function App() {
   const [role, setRole] = useState(""); // Empty by default (not chosen yet)
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Tracks login status
   const [timeLeft, setTimeLeft] = useState(0); // Time in seconds
+  const [teacherId, setTeacherId] = useState(null);
 
 return (
     <div className="main-content">
@@ -21,12 +22,12 @@ return (
         </div>
       ) : role === "teacher" ? (
         isAuthenticated ? (
-          <TeacherView timeLeft={timeLeft} setTimeLeft={setTimeLeft}/>
+          <TeacherView timeLeft={timeLeft} setTimeLeft={setTimeLeft} teacherId={teacherId}/>
         ) : (
-          <Login setIsAuthenticated={setIsAuthenticated} />
+          <Login setIsAuthenticated={setIsAuthenticated} teacherId={teacherId} />
         )
       ) : (
-        <StudentView timeLeft={timeLeft}/>
+        <StudentView timeLeft={timeLeft} teacherId={teacherId}/>
       )}
     </div>
   );
