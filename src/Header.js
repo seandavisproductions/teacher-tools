@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { GenerateStudentCode } from "./StudentCode";
 
-export function Header({ tools, sessionCode, setSessionCode, sendUpdate }) {
+export function Header({ tools, sessionCode, setSessionCode, sendUpdate, teacherId }) {
   const [objective, setObjective] = useState("");
 
   function toggleFullscreen() {
@@ -29,7 +29,7 @@ export function Header({ tools, sessionCode, setSessionCode, sendUpdate }) {
           placeholder="e.g To understand how to use Teacher Toolkit"
           onChange={(e) => setObjective(e.target.value)}
         ></input>
-          <GenerateStudentCode/>
+          <GenerateStudentCode teacherId={teacherId}/>
           
       </div>
     </div>

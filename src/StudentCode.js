@@ -6,7 +6,7 @@ const socket = io("https://teacher-toolkit-back-end.onrender.com");
 
 
 
-export function GenerateStudentCode() {
+export function GenerateStudentCode({ teacherId }) {
     const [sessionCode, setSessionCode] = useState(""); // Stores the teacher-generated code
       // For entering a code manually (e.g., when a teacher has already generated one)
     const [inputCode, setInputCode] = useState("");
@@ -25,12 +25,29 @@ export function GenerateStudentCode() {
     return () => socket.off("sessionUpdate");
   }, []);
     
-    const handleGenerateCode = () => {
-    const newCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-    setSessionCode(newCode);
-    sendUpdate(newCode, { message: "New session code created!" }); 
-    // Also join the room so that subsequent updates are received
-    joinRoom(newCode);
+    const handleGenerateCode = async () => {
+  const newCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+  setSessionCode(newCode);
+
+  // Use teacherId from props
+  try {
+    const response = await fetch("https://teacher-toolkit-back-end.onrender.com/session/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: newCode, teacherId }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to save session code");
+    }
+    // Optionally handle response data here
+  } catch (err) {
+    alert("Error saving session code to the server.");
+    console.error(err);
+  }
+
+  sendUpdate(newCode, { message: "New session code created!" }); 
+  // Also join the room so that subsequent updates are received
+  joinRoom(newCode);
     }
       // Function to send an update via Socket.IO
     const sendUpdate = (sessionCode, newData) => {
