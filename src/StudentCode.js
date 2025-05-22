@@ -11,6 +11,10 @@ export function GenerateStudentCode() {
       // For entering a code manually (e.g., when a teacher has already generated one)
     const [inputCode, setInputCode] = useState("");
 
+
+    useEffect(() => {
+  console.log("Current sessionCode:", sessionCode);
+}, [sessionCode]);
     // Listen for updates from the server (for example, if the teacher sends an update)
   useEffect(() => {
     socket.on("sessionUpdate", (data) => {
@@ -40,10 +44,23 @@ export function GenerateStudentCode() {
   };
 
     // In case you want the student to manually enter a code and join it
-  const handleJoinRoom = () => {
+  const handleJoinRoom = async () => {
     if (inputCode) {
-      setSessionCode(inputCode);
-      joinRoom(inputCode);
+      // Validate the code with the backend before joining the room
+      try {
+        const res = await fetch(`https://teacher-toolkit-back-end.onrender.com/session/validate/${inputCode}`);
+        const data = await res.json();
+        if (data.valid) {
+          setSessionCode(inputCode);
+          joinRoom(inputCode);
+          // Optionally, show a success message or update UI
+        } else {
+          alert("Invalid or expired code. Please try again.");
+        }
+      } catch (err) {
+        alert("Error validating code. Please try again later.");
+        console.error(err);
+      }
     }
   };
 
@@ -61,18 +78,6 @@ export function GenerateStudentCode() {
       <button className="button" onClick={handleGenerateCode} id="1">
         {!sessionCode ? 'Generate Student Code' : `Student Code: ${sessionCode}`}
       </button>
-      <div style={{ marginTop: "1rem" }}>
-        <input
-          className="input-text"
-          type="text"
-          placeholder="Enter session code"
-          value={inputCode}
-          onChange={(e) => setInputCode(e.target.value)}
-        />
-        <button className="button" onClick={handleJoinRoom}>
-          Join Session
-        </button>
-      </div>
     </div>
   );
 }
