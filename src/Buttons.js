@@ -1,6 +1,6 @@
 import { Button } from "./Button";
 
-export function Buttons({ tools, curOpen, setIsOpen }) {
+export function Buttons({ tools, curOpen, setIsOpen, setCurOpen }) {
   return (
     <div className="tool-buttons-container">
       {tools.map((el, i) => (
@@ -10,6 +10,7 @@ export function Buttons({ tools, curOpen, setIsOpen }) {
           number={i + 1}
           curOpen={curOpen}
           setIsOpen={setIsOpen}
+          setCurOpen={setCurOpen}
         ></Button>
       ))}
     </div>

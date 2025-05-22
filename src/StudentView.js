@@ -2,9 +2,6 @@ import { useState } from "react";
 import { io } from "socket.io-client";
 import { Footer } from "./Footer";
 
-
-
-
 export const StudentView = ({ sessionCode, setSessionCode, timeLeft }) => {
   const socket = io("https://teacher-toolkit-back-end.onrender.com");
   const [inputCode, setInputCode] = useState("");

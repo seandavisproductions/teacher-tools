@@ -1,21 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Login from "./Login"
 
 
-export function Register() {
+export function Register({setIsAuthenticated}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [teacherId, setTeacherId] = useState(""); // if needed
-  const navigate = useNavigate();
+  const [backToLogin, setBackToLogin] = useState(true)
+  
 
+  function handleBackToLogin() {
+setBackToLogin(!backToLogin)
+
+}
+  
   const handleRegister = async () => {
-    try {
-
-      
+     if (password.length < 8) {
+      alert("Password must be at least 8 characters long.");
+      return;
+    }
+    
+    try {  
       const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, teacherId }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
@@ -25,12 +35,16 @@ export function Register() {
       const data = await response.json();
       console.log("Register Response:", data);
 
-      if (data.success) {
+      if (!data.success) {
         alert("Registration successful! Please login.");
         // Optionally navigate to login page if required:
         // navigate("/login");
+        setTimeout(() => {
+          setBackToLogin(true);
+        }, 2000);
+        console.log("It worked")
       } else {
-        alert("Registration failed! " + data.error);
+        alert("Registration failed! " + (data.error || "Unknown error"));
       }
     } catch (error) {
       console.error("Register Error:", error.message);
@@ -38,14 +52,9 @@ export function Register() {
   };
 
 
-  const handleLogin = () => {
-    // Define or import your login logic here
-  };
-
-
-  return (
-    <div className="teacher-app">
-      <h1>Login</h1>
+  return (backToLogin ? 
+  (  <div className="teacher-app">
+      <h1>Register Your Username and Password</h1>
       <input
         className="input-text"
         type="text"
@@ -58,10 +67,11 @@ export function Register() {
         placeholder="Password"
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button className="button" onClick={handleLogin}>Login</button>
-      <button className="button" onClick={() => navigate('/register')}>Register</button>
-    </div>
-  );
+
+      <button className="button" onClick={handleRegister}>Submit</button>
+      <button className="button" onClick={handleBackToLogin}>Back to login</button>
+    </div>) : (<Login setIsAuthenticated={setIsAuthenticated} />)
+  )
 }
 
 

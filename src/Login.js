@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
 import { Register } from "./Register";
 
 export default function Login({ setIsAuthenticated }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // Create navigation function
+  const [register, setRegister] = useState(false)
+  
+
 
 const handleLogin = async () => {
   try {
@@ -32,8 +34,11 @@ const handleLogin = async () => {
   }
 };
 
+function handleRegisterPage() {
+setRegister(!register)
+}
 
-  return (
+  return (!register ? (
    <div className="teacher-app">
       <h1>Login</h1>
       <input
@@ -49,7 +54,7 @@ const handleLogin = async () => {
         onChange={(e) => setPassword(e.target.value)}
       />
       <button className="button" onClick={handleLogin}>Login</button>
-      <button className="button" onClick={() => navigate(<Register/>)}>Register</button>
-    </div>
+      <button className="button" onClick={handleRegisterPage}>Register</button>
+    </div>) : <Register setIsAuthenticated={setIsAuthenticated}/>
   );
 }

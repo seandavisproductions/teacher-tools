@@ -70,13 +70,12 @@ h3 {
 }
 
 .welcome {
-  font-size: 50px;
+  font-size: 30px;
   text-align: center;
   padding-top: 20px;
   vertical-align: middle;
-
-
 }
+
 .header nav {
   margin-top: 10px;
 }

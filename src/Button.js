@@ -1,6 +1,7 @@
-export function Button({ title, curOpen, setIsOpen, number }) {
+export function Button({ title, curOpen, setIsOpen, number, setCurOpen }) {
+  
   function handleToggle() {
-    setIsOpen(curOpen === number ? null : number);
+    setCurOpen(curOpen === number ? null : number);
     console.log(number);
   }
   return (

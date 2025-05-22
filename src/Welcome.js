@@ -9,7 +9,7 @@ useEffect(() => {
 
 return (
     <div className={`fade-in ${isVisible ? "visible" : ""}`}>
-    <h1 className="welcome">⬆️Welcome to the Teacher Toolkit. Click a tool above to start!⬆️</h1>
+    <h1 className="welcome">⬆️Click a tool above⬆️</h1>
     </div>
 );
 };
