@@ -30,6 +30,7 @@ export function GenerateStudentCode({ teacherId }) {
   setSessionCode(newCode);
 
   // Use teacherId from props
+  console.log("Sending to backend:", { code: newCode, teacherId });
   try {
     const response = await fetch("https://teacher-toolkit-back-end.onrender.com/session/generate", {
       method: "POST",
@@ -37,6 +38,8 @@ export function GenerateStudentCode({ teacherId }) {
       body: JSON.stringify({ code: newCode, teacherId }),
     });
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Backend error:", errorText);
       throw new Error("Failed to save session code");
     }
     // Optionally handle response data here
