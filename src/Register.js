@@ -1,6 +1,17 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const handleRegister = async () => {
+
+export function Register() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [teacherId, setTeacherId] = useState(""); // if needed
+  const navigate = useNavigate();
+
+  const handleRegister = async () => {
     try {
+
+      
       const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,22 +38,32 @@ const handleRegister = async () => {
   };
 
 
-export function Register() {
-    return (   <div className="teacher-app">
-          <h1>Login</h1>
-          <input
-            className="input-text"
-            type="text"
-            placeholder="Username"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            className="input-text"
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="button" onClick={handleLogin}>Login</button>
-          <button className="button" onClick={() => navigate(<Register/>)}>Register</button>
-        </div>)
+  const handleLogin = () => {
+    // Define or import your login logic here
+  };
+
+
+  return (
+    <div className="teacher-app">
+      <h1>Login</h1>
+      <input
+        className="input-text"
+        type="text"
+        placeholder="Username"
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <input
+        className="input-text"
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button className="button" onClick={handleLogin}>Login</button>
+      <button className="button" onClick={() => navigate('/register')}>Register</button>
+    </div>
+  );
 }
+
+
+
+

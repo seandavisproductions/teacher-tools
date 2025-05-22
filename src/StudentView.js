@@ -46,7 +46,7 @@ socket.on("sessionUpdate", (data) => {
         <div>
         <h2>Welcome to the Student View!</h2>
         <Footer />
-        <p className="digital-clock">{formatTime(timeLeft)}</p>
+        <p className="digital-clock">{(timeLeft)}</p>
         </div>
       )}
     </div>

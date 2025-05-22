@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
-import Register from ".Register";
+import { Register } from "./Register";
 
 export default function Login({ setIsAuthenticated }) {
   const [username, setUsername] = useState("");
