@@ -6,7 +6,6 @@ import Login from "./Login"
 export function Register({setIsAuthenticated}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [teacherId, setTeacherId] = useState(""); // if needed
   const [backToLogin, setBackToLogin] = useState(true)
   
 
@@ -22,7 +21,7 @@ setBackToLogin(!backToLogin)
     }
     
     try {  
-      const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/login", {
+      const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

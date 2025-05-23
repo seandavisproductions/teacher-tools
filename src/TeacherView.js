@@ -19,7 +19,7 @@ const tools = [
 ];
 
 
-export const TeacherView = ({timeLeft, setTimeLeft, teacherId}) => {
+export const TeacherView = ({timeLeft, setTimeLeft, sessionId}) => {
 
   const [curOpen, setCurOpen] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -27,7 +27,7 @@ export const TeacherView = ({timeLeft, setTimeLeft, teacherId}) => {
   return (
   
   <div className="main-content">
-      <Header tools={tools} teacherId={teacherId}/>
+      <Header tools={tools} sessionId={sessionId} setsessionId={setsessionId}/>
       <CountdownTimer setTimeLeft={setTimeLeft} timeLeft={timeLeft}/>
       <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} setCurOpen={setCurOpen}/>
       

@@ -2,15 +2,12 @@ import { useState } from "react";
 import { io } from "socket.io-client";
 import { Footer } from "./Footer";
 
-export const StudentView = ({ sessionCode, setSessionCode, timeLeft }) => {
+export const StudentView = ({ sessionId, setsessionId, timeLeft }) => {
   const socket = io("https://teacher-toolkit-back-end.onrender.com");
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const updateStudentDashboard = (data) => {
   console.log("Updating student view with:", data);
-
-  // Example: Update state with the new session data
-  setSessionCode(data);
 };
 
 socket.on("sessionUpdate", (data) => {
@@ -20,7 +17,7 @@ socket.on("sessionUpdate", (data) => {
 
 
   const handleSubmit = () => {
-    if (inputCode === sessionCode) {
+    if (inputCode === sessionId) {
       setIsAuthorized(true);
     } else {
       alert("Invalid code. Please try again.");
