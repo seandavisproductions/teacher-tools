@@ -10,7 +10,10 @@ export default function Login({ setIsAuthenticated, teacherId, setTeacherId }) {
   const [isLoading, setIsLoading] = useState(false);
   
   
-
+ // For Google login, simply redirect to your backend route.
+  const handleGoogleLogin = () => {
+    window.location.href = "https://teacher-toolkit-back-end.onrender.com/auth/google";
+  };
 
 const handleLogin = async () => {
   setIsLoading(true);
@@ -66,6 +69,7 @@ setRegister(!register)
         />
         <button className="button" onClick={handleLogin}>Login</button>
         <button className="button" onClick={handleRegisterPage}>Register</button>
+        <button onClick={handleGoogleLogin}>Login with Google</button>
       </div>
     ) : (
       <Register setIsAuthenticated={setIsAuthenticated} />
