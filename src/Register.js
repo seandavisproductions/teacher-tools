@@ -22,7 +22,7 @@ setBackToLogin(!backToLogin)
     }
     
     try {  
-      const response = await fetch("https://teacher-toolkit-back-end.onrender.com/routes/authRoutes", {
+      const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
