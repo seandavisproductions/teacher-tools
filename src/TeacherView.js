@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import "./index.css";
 import { Header } from "./Header";
-import { CountdownTimer } from "./CountdownTimer";
+import { CountdownTimerBoard } from "./CountdownTimerBoard";
 import { Buttons } from "./Buttons";
 import { ExerciseInstructions } from "./ExerciseInstructions";
 import { Presentation } from "./Presentation";
@@ -28,7 +28,7 @@ export const TeacherView = ({timeLeft, setTimeLeft, teacherId, setteacherId, ses
   
   <div className="main-content">
       <Header tools={tools} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
-      <CountdownTimer setTimeLeft={setTimeLeft} timeLeft={timeLeft}/>
+      <CountdownTimerBoard setTimeLeft={setTimeLeft} timeLeft={timeLeft}/>
       <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} setCurOpen={setCurOpen}/>
       
   

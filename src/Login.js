@@ -1,5 +1,4 @@
-import { use, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import navigation
+import { useState } from "react";
 import { Register } from "./Register";
 import { LoadingSpinner } from "./LoadingSpinner";
 

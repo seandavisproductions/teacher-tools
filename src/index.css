@@ -10,6 +10,17 @@
   padding: 20px;
 }
 
+.styled-image {
+  width: 30%;
+  max-width: 600px;          /* Adjust maximum width */
+  border-radius: 10px;       /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+  object-fit: cover;         /* Ensures the image covers its container */
+  display: block;
+  margin: 0 auto;            /* Center the image horizontally */
+}
+
+
 .digital-clock {
   font-family: "Orbitron", sans-serif; /* Digital-looking font */
   font-size: 60px;
@@ -22,6 +33,73 @@
   text-align: center;
   margin: 2px; /* Use negative margin if you need to shift content */
 }
+
+/* Neon Clock Theme */
+.digital-clock.neon-clock {
+  font-family: "Orbitron", sans-serif;
+  font-size: 60px;
+  color: #00ff00; /* Classic neon green */
+  text-shadow: 0 0 8px #00ff00, 0 0 16px #00ff00;
+  background-color: black;
+  padding: 10px;
+  border-radius: 10px;
+  width: fit-content;
+  text-align: center;
+}
+
+/* Minimal Clock Theme */
+.digital-clock.minimal-clock {
+  font-family: "Roboto Mono", monospace;
+  font-size: 50px;
+  color: #333; /* Dark text */
+  background-color: #f9f9f9; /* Light background */
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  width: fit-content;
+  text-align: center;
+}
+
+/* Retro Clock Theme */
+.digital-clock.retro-clock {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 55px;
+  color: #ff9800; /* Warm orange */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  background-color: #f5f5dc; /* Beige background */
+  padding: 12px;
+  border: 3px solid #ff9800;
+  border-radius: 8px;
+  width: fit-content;
+  text-align: center;
+}
+
+/* Dark Clock Theme */
+.digital-clock.dark-clock {
+  font-family: "Roboto Mono", monospace;
+  font-size: 50px;
+  color: #fff;
+  background-color: #333;
+  padding: 10px 15px;
+  border: 2px solid #555;
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+
+/* Sunset Clock Theme */
+.digital-clock.sunset-clock {
+  font-family: "Orbitron", sans-serif;
+  font-size: 60px;
+  color: #fff;
+  background: linear-gradient(45deg, #ff7e5f, #feb47b);
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
 
 h1,
 h2,

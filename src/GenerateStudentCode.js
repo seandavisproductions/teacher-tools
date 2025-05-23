@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { io } from "socket.io-client";
-import { useEffect } from "react";
 const socket = io("https://teacher-toolkit-back-end.onrender.com");
 
 

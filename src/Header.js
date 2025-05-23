@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { GenerateStudentCode } from "./GenerateStudentCode";
 
-export function Header({ tools, sendUpdate, teacherId, setteacherId, sessionCode, setSessionCode}) {
+export function Header({ teacherId, setteacherId, sessionCode, setSessionCode}) {
   const [objective, setObjective] = useState("");
 
   function toggleFullscreen() {
