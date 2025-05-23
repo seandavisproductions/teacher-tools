@@ -5,15 +5,15 @@ const socket = io("https://teacher-toolkit-back-end.onrender.com");
 
 
 
-export function GenerateStudentCode({ sessionId, sessionCode, setSessionCode }) {
+export function GenerateStudentCode({ teacherId, sessionCode, setSessionCode }) {
     // Listen for updates from the server (for example, if the teacher sends an update)
 const handleGenerateCode = async () => {
     try {
       const response = await fetch("https://teacher-toolkit-back-end.onrender.com/session/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Send only sessionId to the server for generating the session code
-        body: JSON.stringify({ sessionId }),
+        // Send only teacherId to the server for generating the session code
+        body: JSON.stringify({ teacherId }),
       });
 
       if (!response.ok) {
