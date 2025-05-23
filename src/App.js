@@ -24,7 +24,7 @@ return (
         isAuthenticated ? (
           <TeacherView timeLeft={timeLeft} setTimeLeft={setTimeLeft} teacherId={teacherId}/>
         ) : (
-          <Login setIsAuthenticated={setIsAuthenticated} teacherId={teacherId} />
+          <Login setIsAuthenticated={setIsAuthenticated} teacherId={teacherId} setTeacherId={setTeacherId} />
         )
       ) : (
         <StudentView timeLeft={timeLeft} teacherId={teacherId}/>
