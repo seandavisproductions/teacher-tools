@@ -9,6 +9,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Tracks login status
   const [timeLeft, setTimeLeft] = useState(0); // Time in seconds
   const [sessionId, setsessionId] = useState(null);
+  const [sessionCode, setSessionCode] = useState(""); // Stores the teacher-generated code
 
 return (
     <div className="main-content">
@@ -27,7 +28,7 @@ return (
           <Login setIsAuthenticated={setIsAuthenticated} sessionId={sessionId} setsessionId={setsessionId} />
         )
       ) : (
-        <StudentView timeLeft={timeLeft} sessionId={sessionId}/>
+        <StudentView timeLeft={timeLeft} sessionId={sessionId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
       )}
     </div>
   );

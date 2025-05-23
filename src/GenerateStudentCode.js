@@ -5,8 +5,7 @@ const socket = io("https://teacher-toolkit-back-end.onrender.com");
 
 
 
-export function GenerateStudentCode({ sessionId }) {
-    const [sessionCode, setSessionCode] = useState(""); // Stores the teacher-generated code
+export function GenerateStudentCode({ sessionId, sessionCode, setSessionCode }) {
     // Listen for updates from the server (for example, if the teacher sends an update)
 const handleGenerateCode = async () => {
     try {

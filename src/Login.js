@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"; // Import navigation
 import { Register } from "./Register";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-export default function Login({ setIsAuthenticated, sessionId, setsessionId }) {
+export default function Login({ setIsAuthenticated, teacherId, setTeacherId }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [register, setRegister] = useState(false)
@@ -34,7 +34,7 @@ const handleLogin = async () => {
     if (data.token) {
       setIsAuthenticated(true);
       // In your login handler, after a successful login:
-      setsessionId(data.sessionId); // data.sessionId comes from your backend login response
+      setTeacherId(data.teacherId); // data.teacherId comes from your backend login response
     } else {
       alert("Login failed! " + data.error);
     }

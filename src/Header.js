@@ -29,7 +29,7 @@ export function Header({ tools, sendUpdate, sessionId, setsessionId}) {
           placeholder="e.g To understand how to use Teacher Toolkit"
           onChange={(e) => setObjective(e.target.value)}
         ></input>
-          <GenerateStudentCode sessionId={sessionId} setsessionId={setsessionId}/>
+          <GenerateStudentCode sessionId={sessionId} setsessionId={setsessionId} sessionCode={sessionCode} setSessionCode={setSessionCode}/>
           
       </div>
     </div>
