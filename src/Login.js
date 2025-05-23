@@ -1,16 +1,19 @@
 import { use, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import navigation
 import { Register } from "./Register";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 export default function Login({ setIsAuthenticated, teacherId, setTeacherId }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [register, setRegister] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   
   
 
 
 const handleLogin = async () => {
+  setIsLoading(true);
   try {
     const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/login", {
       method: "POST",
@@ -34,30 +37,38 @@ const handleLogin = async () => {
     }
   } catch (error) {
     console.error("Login Error:", error.message);
-  }
+  } finally {
+      setIsLoading(false);
+    }
 };
 
 function handleRegisterPage() {
 setRegister(!register)
 }
 
-  return (!register ? (
-   <div className="teacher-app">
-      <h1>Login</h1>
-      <input
-        className="input-text"
-        type="text"
-        placeholder="Username"
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        className="input-text"
-        type="password"
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button className="button" onClick={handleLogin}>Login</button>
-      <button className="button" onClick={handleRegisterPage}>Register</button>
-    </div>) : <Register setIsAuthenticated={setIsAuthenticated}/>
+ return isLoading ? (
+    <LoadingSpinner />
+  ) : (
+    !register ? (
+      <div className="teacher-app">
+        <h1>Login</h1>
+        <input
+          className="input-text"
+          type="text"
+          placeholder="Username"
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          className="input-text"
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="button" onClick={handleLogin}>Login</button>
+        <button className="button" onClick={handleRegisterPage}>Register</button>
+      </div>
+    ) : (
+      <Register setIsAuthenticated={setIsAuthenticated} />
+    )
   );
 }
