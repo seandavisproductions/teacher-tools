@@ -55,8 +55,9 @@ const handleSubmit = async () => {
         </div>
         
       ) : (
-        <div>
+        <div className="teacher-app">
         <h2>Welcome to the Student View!</h2>
+        <img className="styled-image" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
         <Footer />
         <TimerClock/>
         </div>

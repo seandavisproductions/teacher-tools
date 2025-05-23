@@ -21,12 +21,11 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode}) 
         >
           🔳 Fullscreen
         </button>
-        <h1>Teacher Toolkit</h1>
-        Todays Objective:
+        <img className="styled-image header" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
         <input
           className="input-text"
           type="text"
-          placeholder="e.g To understand how to use Teacher Toolkit"
+          placeholder="Objective: To understand how to use Teacher Toolkit"
           onChange={(e) => setObjective(e.target.value)}
         ></input>
           <GenerateStudentCode teacherId={teacherId} setteacherId={setteacherId} sessionCode={sessionCode} setSessionCode={setSessionCode}/>

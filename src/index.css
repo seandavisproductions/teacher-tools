@@ -20,6 +20,24 @@
   margin: 0 auto;            /* Center the image horizontally */
 }
 
+label {
+  position: absolute;
+  top: -20px;
+  left: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.styled-image.header {
+  width: 20%;
+  max-width: 200px;          /* Adjust maximum width */
+  border-radius: 10px;       /* Rounded corners */
+  object-fit: cover;  
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);       /* Ensures the image covers its container */
+  display: block;
+  margin: 0;
+  padding: 0%;            /* Center the image horizontally */
+}
 
 .digital-clock {
   font-family: "Orbitron", sans-serif; /* Digital-looking font */
