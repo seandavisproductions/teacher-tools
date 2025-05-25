@@ -28,7 +28,7 @@ export const TeacherView = ({timeLeft, setTimeLeft, teacherId, setteacherId, ses
   
   <div className="main-content">
       <Header setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
-      <CountdownTimerBoard setTimeLeft={setTimeLeft} timeLeft={timeLeft}/>
+      <CountdownTimerBoard setTimeLeft={setTimeLeft} timeLeft={timeLeft} sessionCode={sessionCode}/>
       <Buttons tools={tools} isAuthenticated={isAuthenticated} curOpen={curOpen} setIsOpen={setIsOpen} setCurOpen={setCurOpen}/>
       
   

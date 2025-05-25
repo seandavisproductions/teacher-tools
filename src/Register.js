@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Login } from "./Login";
 
 
-export function Register({setIsAuthenticated}) {
+export function Register({setIsAuthenticated, closeModal}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [backToLogin, setBackToLogin] = useState(true)
@@ -36,10 +36,11 @@ setBackToLogin(!backToLogin)
 
       if (!data.success) {
         alert("Registration successful! Please login.");
+        setBackToLogin(!backToLogin)
         // Optionally navigate to login page if required:
         // navigate("/login");
         setTimeout(() => {
-          setBackToLogin(true);
+          setBackToLogin(!backToLogin);
         }, 2000);
         console.log("It worked")
       } else {
@@ -53,6 +54,11 @@ setBackToLogin(!backToLogin)
 
   return (backToLogin ? 
   (  <div className="teacher-app">
+      {closeModal && (
+        <button className="modal-close" onClick={closeModal}>
+          &times;
+        </button>
+      )}
       <h1>Register Your Username and Password</h1>
       <input
         className="input-text"
@@ -69,7 +75,7 @@ setBackToLogin(!backToLogin)
 
       <button className="button" onClick={handleRegister}>Submit</button>
       <button className="button" onClick={handleBackToLogin}>Back to login</button>
-    </div>) : (<Login setIsAuthenticated={setIsAuthenticated} />)
+    </div>) : (<Login setIsAuthenticated={setIsAuthenticated} closeModal={closeModal}/>)
   )
 }
 

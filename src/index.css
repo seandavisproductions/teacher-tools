@@ -1,6 +1,14 @@
 /* Main App Layout for the teacher application */
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap");
 
+/* label {
+  position: absolute;
+  top: -20px;
+  left: 10px;
+  font-size: 14px;
+  color: #333;
+} */
+
 .teacher-app {
   display: flex;
   flex-direction: column;
@@ -11,8 +19,7 @@
 }
 
 .styled-image {
-  width: 30%;
-  max-width: 150px;          /* Adjust maximum width */
+  width: 30%;        /* Adjust maximum width */
   border-radius: 10px;       /* Rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
   object-fit: cover;         /* Ensures the image covers its container */
@@ -20,26 +27,19 @@
   margin: 0 auto;            /* Center the image horizontally */
 }
 
-label {
-  position: absolute;
-  top: -20px;
-  left: 10px;
-  font-size: 14px;
-  color: #333;
-}
-
 .styled-image.logo {
-  width: 15%; 
-  height: 10%;    /* Adjust maximum width */
+  width: 100px; 
+  height: 60px;    /* Adjust maximum width */
   border-radius: 10px;       /* Rounded corners */
   object-fit: cover;  
   box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);       /* Ensures the image covers its container */
   display: block;
   margin: 0;
-  padding: 0%;            /* Center the image horizontally */
+  padding: 10px;            /* Center the image horizontally */
 }
 
 .styled-image.fullscreen {
+  max-width: 150px;
   width: 100%; 
   height: 100%;           /* Adjust maximum width */
   border-radius: 10px;       /* Rounded corners */
@@ -55,18 +55,17 @@ label {
   border-radius: 10px;
   width: fit-content;
   text-align: center;
+  padding: 20px 30px;
+  font-size: 50px;
   margin: 2px; /* Use negative margin if you need to shift content */
 }
 
 /* Minimal Clock Theme */
 .digital-clock.minimal-clock {
   font-family: "Roboto Mono", monospace;
-  font-size: 50px;
   color: #222;
   background: linear-gradient(145deg, #e0eafc, #cfdef3);
-  padding: 20px 30px;
   border: none;
-  border-radius: 15px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   width: fit-content;
   text-align: center;
@@ -79,12 +78,8 @@ label {
 /* Retro Clock Theme */
 .digital-clock.retro-clock {
   font-family: "Courier Prime", monospace;
-  font-size: 55px;
-  color: #ffeb3b;
+  color: #3e0b3b;
   background: linear-gradient(45deg, #fbc2eb, #a6c1ee);
-  padding: 14px 20px;
-  border: 2px solid #ff9800;
-  border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   width: fit-content;
   text-align: center;
@@ -98,29 +93,22 @@ label {
 /* Dark Clock Theme */
 .digital-clock.dark-clock {
   font-family: "Roboto Mono", monospace;
-  font-size: 50px;
   color: #e0e0e0;
   background: #1a1a1a;
-  padding: 15px 20px;
-  border: none;
-  border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 150, 0.2);
   text-align: center;
   transition: background 0.3s ease, transform 0.3s ease;
 }
 .digital-clock.dark-clock:hover {
   transform: scale(1.02);
-  background: #222;
+  background: #8f6d6d;
 }
 
 /* Sunset Clock Theme */
 .digital-clock.sunset-clock {
   font-family: "Orbitron", sans-serif;
-  font-size: 60px;
   color: #fff;
   background: linear-gradient(135deg, #fc5c7d, #6a82fb);
-  padding: 12px 18px;
-  border-radius: 15px;
   border: none;
   text-align: center;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -499,15 +487,17 @@ body {
 .button {
   background-color: #7950f2; /* Blue color */
   color: white;
-  padding: 12px 20px;
+  padding: 5px;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 60%;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
   margin: 5px;
   width: 100%;
+  max-width: 200px;
   height: 100%;
+  word-wrap: break-word;
 }
 
 .button-fullscreen {
@@ -650,58 +640,7 @@ h3 {
   cursor: pointer;
 }
 
-/* For devices with a max width of 600px */
-@media (max-width: 600px) {
-  .teacher-app {
-    padding: 10px;
-  }
 
-  .header {
-    padding: 5px;
-    font-size: 10px;
-  }
-
-  .digital-clock {
-    font-size: 25px;
-    padding: 5px;
-  }
-
-  .countdown-container {
-    flex-direction: column;
-    gap: 2px;
-    font-size: 20px;
-    padding: 5px;
-  }
-
-  .presentation-container .input-box {
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  .presentation-container .button {
-    padding: 8px 15px;
-    font-size: 14px;
-  }
-
-  .buttons button,
-  .buttons input {
-    min-width: 20px;
-    padding: 8px 12px;
-    font-size: 15px;
-    border: none;
-    margin: 5px;
-    background: #7950f2;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  .welcome {
-    font-size: 25px;
-    text-align: center;
-    padding-top: 20px;
-    vertical-align: middle;
-  }
-}
 
 /* For landscape orientation on smaller screens */
 @media only screen and (orientation: landscape) and (max-width: 1024px) {
@@ -765,4 +704,57 @@ h3 {
 
 button:hover {
   background-color: #0056b3;
+}
+
+
+/* For devices with a max width of 600px */
+@media (max-width: 600px) {
+  .teacher-app {
+    padding: 5px;
+  }
+
+  /* .header {
+    font-size: 10px;
+  } */
+
+  .digital-clock {
+    font-size: 25px;
+    padding: 5px;
+  }
+
+  .countdown-container {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 20px;
+    padding: 5px;
+  }
+
+  /* .presentation-container .input-box {
+    font-size: 14px;
+    padding: 8px;
+  } */
+/* 
+  .presentation-container .button {
+    padding: 8px 15px;
+    font-size: 14px;
+  } */
+
+  .buttons button,
+  .buttons input {
+    min-width: 20px;
+    padding: 8px 12px;
+    font-size: 15px;
+    border: none;
+    margin: 5px;
+    background: #7950f2;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .welcome {
+    font-size: 25px;
+    text-align: center;
+    padding-top: 20px;
+    vertical-align: middle;
+  }
 }

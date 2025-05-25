@@ -86,7 +86,7 @@ return isLoading ? (
       <button onClick={handleGoogleLogin}>Login with Google</button>
     </div>
   ) : (
-    <Register setIsAuthenticated={setIsAuthenticated} />
+    <Register setIsAuthenticated={setIsAuthenticated} closeModal={closeModal}/>
   )
 );
 }
