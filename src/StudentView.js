@@ -4,7 +4,7 @@ import { Footer } from "./Footer";
 import { TimerClock } from "./TimerClock";
 
 export const StudentView = ({ sessionCode }) => {
-  const socket = io("https://teacher-toolkit-back-end.onrender.com:10000");
+  const socket = io("https://teacher-toolkit-back-end.onrender.com");
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0); // Local time for the timer
