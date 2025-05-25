@@ -3,8 +3,8 @@ import { io } from "socket.io-client";
 import { Footer } from "./Footer";
 import { TimerClock } from "./TimerClock";
 
-export const StudentView = ({ teacherId, setteacherId, sessionCode }) => {
-  const socket = io("https://teacher-toolkit-back-end.onrender.com");
+export const StudentView = ({ sessionCode }) => {
+  const socket = io("https://teacher-toolkit-back-end.onrender.com:10000");
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0); // Local time for the timer
