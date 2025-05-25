@@ -13,12 +13,13 @@ export const StudentView = ({ teacherId, setteacherId, sessionCode }) => {
   useEffect(() => {
     if (sessionCode) {
       socket.emit("joinSession", { sessionCode });
-      
+      console.log(sessionCode)
+      socket.on("joinSession", ({ sessionCode }) => console.log("Joined session:", sessionCode));
       // Listen for countdown updates from the server.
       socket.on("countdownUpdate", ({ timeLeft: updatedTime }) => {
         setTimeLeft(updatedTime);
       });
-
+console.log("Connected to socket:", socket.connected);
       return () => {
         socket.off("countdownUpdate");
       };
