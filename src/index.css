@@ -12,7 +12,7 @@
 
 .styled-image {
   width: 30%;
-  max-width: 600px;          /* Adjust maximum width */
+  max-width: 150px;          /* Adjust maximum width */
   border-radius: 10px;       /* Rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
   object-fit: cover;         /* Ensures the image covers its container */
@@ -28,9 +28,20 @@ label {
   color: #333;
 }
 
-.styled-image.header {
-  width: 20%;
-  max-width: 200px;          /* Adjust maximum width */
+.styled-image.logo {
+  width: 15%; 
+  height: 10%;    /* Adjust maximum width */
+  border-radius: 10px;       /* Rounded corners */
+  object-fit: cover;  
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);       /* Ensures the image covers its container */
+  display: block;
+  margin: 0;
+  padding: 0%;            /* Center the image horizontally */
+}
+
+.styled-image.fullscreen {
+  width: 100%; 
+  height: 100%;           /* Adjust maximum width */
   border-radius: 10px;       /* Rounded corners */
   object-fit: cover;  
   box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);       /* Ensures the image covers its container */
@@ -148,7 +159,36 @@ h3 {
   padding-bottom: 24px; /* Adjust based on footer height */
 }
 
+/* Modal overlay that covers the entire screen */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);  /* semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Container for the Login modal content */
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+}
+
+/* Apply a blur filter to the background content */
+.blurred {
+  filter: blur(5px);
+}
+
 .header {
+  max-height: 120px;
   display: flex;
   background-color: #4caf50;
   color: white;
@@ -294,9 +334,19 @@ h3 {
   text-decoration: underline;
 }
 
+input {
+  width: 100%;
+  overflow: auto;
+  resize: vertical;
+  padding: 5px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .input-text {
-  width: 90%;
-  padding: 12px;
+  min-height: 20px;
+  padding: 6px;
   font-size: 30px;
   border: 2px solid #4caf50;
   border-radius: 5px;
@@ -441,6 +491,21 @@ body {
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
   margin: 5px;
+  width: 100%;
+  height: 100%;
+}
+
+.button-fullscreen {
+  size: 10%;
+  background-color: #7950f2; /* Blue color */
+  color: white;
+  padding: 0px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 0px;
 }
 
 
@@ -679,13 +744,7 @@ h3 {
   text-align: center;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
+
 
 
 

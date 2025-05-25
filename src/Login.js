@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Register } from "./Register";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-export default function Login({ setIsAuthenticated, teacherId, setteacherId }) {
+export function Login({ setIsAuthenticated, teacherId, setteacherId }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [register, setRegister] = useState(false)
@@ -49,30 +49,38 @@ function handleRegisterPage() {
 setRegister(!register)
 }
 
- return isLoading ? (
-    <LoadingSpinner />
+return isLoading ? (
+  <LoadingSpinner />
+) : (
+  !register ? (
+    <div className="teacher-app">
+      <h1>Login</h1>
+      <input
+        className="input-text"
+        type="text"
+        placeholder="Username"
+        onChange={(e) => setUsername(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleLogin();
+        }}
+      />
+      <input
+        className="input-text"
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleLogin();
+        }}
+      />
+      <button className="button" onClick={handleLogin} onKeyDown={(e) => {
+          if (e.key === "Enter") handleLogin();
+        }}>Login</button>
+      <button className="button" onClick={handleRegisterPage}>Register</button>
+      <button onClick={handleGoogleLogin}>Login with Google</button>
+    </div>
   ) : (
-    !register ? (
-      <div className="teacher-app">
-        <h1>Login</h1>
-        <input
-          className="input-text"
-          type="text"
-          placeholder="Username"
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          className="input-text"
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button className="button" onClick={handleLogin}>Login</button>
-        <button className="button" onClick={handleRegisterPage}>Register</button>
-        <button onClick={handleGoogleLogin}>Login with Google</button>
-      </div>
-    ) : (
-      <Register setIsAuthenticated={setIsAuthenticated} />
-    )
-  );
+    <Register setIsAuthenticated={setIsAuthenticated} />
+  )
+);
 }

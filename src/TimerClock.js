@@ -16,7 +16,6 @@ export function TimerClock({timeLeft}) {
 
     const themes = [ 
   "digital-clock minimal-clock",
-  "digital-clock retro-clock",
   "digital-clock dark-clock",
   "digital-clock sunset-clock"
 ];

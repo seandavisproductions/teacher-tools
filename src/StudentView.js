@@ -1,26 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { Footer } from "./Footer";
 import { TimerClock } from "./TimerClock";
 
-export const StudentView = ({ teacherId, setteacherId, timeLeft, sessionCode }) => {
+export const StudentView = ({ teacherId, setteacherId, sessionCode }) => {
   const socket = io("https://teacher-toolkit-back-end.onrender.com");
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const updateStudentDashboard = (data) => {
-  console.log("Updating student view with:", data);
-};
+  const [timeLeft, setTimeLeft] = useState(0); // Local time for the timer
 
-socket.on("sessionUpdate", (data) => {
-  console.log("Received update from teacher:", data);
-  updateStudentDashboard(data);
-});
+  // Join the session room when a valid sessionCode is available.
+  useEffect(() => {
+    if (sessionCode) {
+      socket.emit("joinSession", { sessionCode });
+      
+      // Listen for countdown updates from the server.
+      socket.on("countdownUpdate", ({ timeLeft: updatedTime }) => {
+        setTimeLeft(updatedTime);
+      });
 
+      return () => {
+        socket.off("countdownUpdate");
+      };
+    }
+  }, [sessionCode, socket]);
 
-const handleSubmit = async () => {
+  // Validate the entered session code with the backend.
+  const handleSubmit = async () => {
     console.log("Input Code:", inputCode);
     try {
-      // Send the entered code to the secure endpoint for validation
       const response = await fetch("https://teacher-toolkit-back-end.onrender.com/session/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,7 +47,6 @@ const handleSubmit = async () => {
     }
   };
 
-
   return (
     <div>
       {!isAuthorized ? (
@@ -51,19 +58,17 @@ const handleSubmit = async () => {
             onChange={(e) => setInputCode(e.target.value)}
           />
           <button onClick={handleSubmit}>Submit</button>
-        {console.log(sessionCode)}
+          {console.log(sessionCode)}
         </div>
-        
       ) : (
         <div className="teacher-app">
-        <h2>Welcome to the Student View!</h2>
-        <img className="styled-image" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
-        <Footer />
-        <TimerClock/>
+          <h2>Welcome to the Student View!</h2>
+          <img className="styled-image" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
+          <Footer />
+          {/* Pass the timeLeft down to TimerClock */}
+          <TimerClock timeLeft={timeLeft} />
         </div>
       )}
-      
     </div>
-    
   );
 };

@@ -5,12 +5,12 @@ export function LoadingSpinner() {
     const [spinner, setSpinner] = useState()
     
 
-    useEffect(() => {setTimeout(() => {setText(`can you see something here`);}, 3000);}, []);
+    useEffect(() => {setTimeout(() => {setText(`loading...`);}, 3000);}, []);
 
     return (
     <>
         <div>
-            {spinner ? (<img src="public/Pacman Spinner.gif" alt="Loading..."/>) : (<h3>{text}</h3>)}
+            {spinner ? (<img src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Loading..."/>) : (<h3>{text}</h3>)}
         </div>
     </>)
 }

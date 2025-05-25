@@ -19,7 +19,7 @@ const tools = [
 ];
 
 
-export const TeacherView = ({timeLeft, setTimeLeft, teacherId, setteacherId, sessionCode, setSessionCode}) => {
+export const TeacherView = ({timeLeft, setTimeLeft, teacherId, setteacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated}) => {
 
   const [curOpen, setCurOpen] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -27,9 +27,9 @@ export const TeacherView = ({timeLeft, setTimeLeft, teacherId, setteacherId, ses
   return (
   
   <div className="main-content">
-      <Header tools={tools} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
+      <Header setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
       <CountdownTimerBoard setTimeLeft={setTimeLeft} timeLeft={timeLeft}/>
-      <Buttons tools={tools} curOpen={curOpen} setIsOpen={setIsOpen} setCurOpen={setCurOpen}/>
+      <Buttons tools={tools} isAuthenticated={isAuthenticated} curOpen={curOpen} setIsOpen={setIsOpen} setCurOpen={setCurOpen}/>
       
   
   {curOpen > 0 ? (

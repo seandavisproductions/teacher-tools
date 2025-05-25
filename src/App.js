@@ -1,7 +1,6 @@
 import { useState  } from "react";
 import {TeacherView} from './TeacherView';
 import {StudentView} from "./StudentView"; // Importing StudentView component
-import Login from "./Login";
 
 
 export default function App() {
@@ -24,13 +23,9 @@ return (
           </div>
         </div>
       ) : role === "teacher" ? (
-        isAuthenticated ? (
-          <TeacherView timeLeft={timeLeft} setTimeLeft={setTimeLeft} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
+          <TeacherView setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated} timeLeft={timeLeft} setTimeLeft={setTimeLeft} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
         ) : (
-          <Login setIsAuthenticated={setIsAuthenticated} teacherId={teacherId} setteacherId={setteacherId}  />
-        )
-      ) : (
-        <StudentView timeLeft={timeLeft} teacherId={teacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
+        <StudentView  timeLeft={timeLeft} teacherId={teacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
       )}
     </div>
   );
