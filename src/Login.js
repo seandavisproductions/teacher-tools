@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Register } from "./Register";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-export function Login({ setIsAuthenticated, teacherId, setteacherId }) {
+export function Login({ setIsAuthenticated, teacherId, setteacherId, closeModal }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [register, setRegister] = useState(false)
@@ -54,6 +54,12 @@ return isLoading ? (
 ) : (
   !register ? (
     <div className="teacher-app">
+       {/* Close button in the top right corner */}
+      {closeModal && (
+        <button className="modal-close" onClick={closeModal}>
+          &times;
+        </button>
+      )}
       <h1>Login</h1>
       <input
         className="input-text"
