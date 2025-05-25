@@ -4,10 +4,17 @@ import { Footer } from "./Footer";
 import { TimerClock } from "./TimerClock";
 
 export const StudentView = ({ sessionCode }) => {
-  const socket = io("https://teacher-toolkit-back-end.onrender.com");
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0); // Local time for the timer
+
+
+  const socket = io("https://teacher-toolkit-back-end.onrender.com", {
+  withCredentials: true, // Ensure credentials are sent correctly
+  extraHeaders: {
+    "Access-Control-Allow-Origin": "*"
+  }
+});
 
   // Join the session room when a valid sessionCode is available.
   useEffect(() => {
