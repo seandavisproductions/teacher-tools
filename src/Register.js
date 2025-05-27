@@ -1,84 +1,35 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Login } from "./Login";
+// src/Login.js
+import React, { useState } from 'react';
 
+// Added onSwitchToRegister prop
+export function Login({ onAuthSuccess, closeModal, onSwitchToRegister }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-export function Register({setIsAuthenticated, closeModal}) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [backToLogin, setBackToLogin] = useState(true)
-  
-
-  function handleBackToLogin() {
-setBackToLogin(!backToLogin)
-
-}
-  
-  const handleRegister = async () => {
-     if (password.length < 8) {
-      alert("Password must be at least 8 characters long.");
-      return;
-    }
-    
-    try {  
-      const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Register Response:", data);
-
-      if (!data.success) {
-        alert("Registration successful! Please login.");
-        setBackToLogin(!backToLogin)
-        // Optionally navigate to login page if required:
-        // navigate("/login");
-        setTimeout(() => {
-          setBackToLogin(!backToLogin);
-        }, 2000);
-        console.log("It worked")
-      } else {
-        alert("Registration failed! " + (data.error || "Unknown error"));
-      }
-    } catch (error) {
-      console.error("Register Error:", error.message);
-    }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    // ... (Your existing login logic) ...
+    // After successful login and session generation, call onAuthSuccess(sessionCode, teacherId);
+    // ...
   };
 
-
-  return (backToLogin ? 
-  (  <div className="teacher-app">
-      {closeModal && (
+  return (
+    <div className="login-container">
+      {closeModal && ( // If you use a modal, keep this
         <button className="modal-close" onClick={closeModal}>
           &times;
         </button>
       )}
-      <h1>Register Your Username and Password</h1>
-      <input
-        className="input-text"
-        type="text"
-        placeholder="Username"
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        className="input-text"
-        type="password"
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <button className="button" onClick={handleRegister}>Submit</button>
-      <button className="button" onClick={handleBackToLogin}>Back to login</button>
-    </div>) : (<Login setIsAuthenticated={setIsAuthenticated} closeModal={closeModal}/>)
-  )
+      <h3>Login to Get a Session Code</h3>
+      <form onSubmit={handleLogin}>
+        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <button type="submit">Login</button>
+      </form>
+      {/* Button to switch to the Register form */}
+      <button className="button" onClick={onSwitchToRegister}>
+        Don't have an account? Register
+      </button>
+    </div>
+  );
 }
-
-
-
-

@@ -1,111 +1,72 @@
-import React, { useState, useEffect, useRef } from "react";
+// src/Header.js
+import React, { useState } from 'react'; // Make sure useState is imported
 import { GenerateStudentCode } from "./GenerateStudentCode";
-import { Subtitles } from "./subtitles"; // Import the Subtitles component
-import { useSocket } from "./context/SocketContext";
+import { Subtitles } from "./subtitles";
+import { Login } from './Login';
+import { Register } from './Register'; // <--- Import Register component
+// No need to import useSocket here unless Header itself directly uses it for non-child components
 
-// REMOVE: No longer needed here as socket comes from context
-// const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
+// Header now receives relevant state and setter functions from TeacherView
+export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, onAuthAndSessionSuccess }) {
+    // Determine if the user is "logged in" (has a teacherId)
+    const isAuthenticated = !!teacherId;
 
-export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated }) {
-  const [objective, setObjective] = useState("");
-  // REMOVE: No longer need socketRef as useSocket will provide the instance
-  // const socketRef = useRef(null);
+    // State to toggle between Login and Register forms within Header
+    const [showRegisterForm, setShowRegisterForm] = useState(false);
 
-  // Get the socket instance from context
-  const socket = useSocket(); // <-- Get the socket instance here!
-
-  // --- Socket.IO listeners and joinSession logic ---
-  useEffect(() => {
-    // IMPORTANT: Ensure socket is available before setting up listeners
-    if (!socket || !sessionCode) {
-      console.warn("Header: Socket or sessionCode not available (yet).");
-      return;
-    }
-
-    console.log('Header: Setting up Socket.IO listeners for session:', sessionCode);
-
-    // No need for 'connect' listener here, as SocketProvider handles global connection
-    // and joinSession.
-
-    socket.on('objectiveUpdate', (receivedObjective) => {
-        console.log('Teacher Header received objectiveUpdate confirmation:', receivedObjective);
-        // You might want to update the local objective state here if the server confirms it,
-        // or if another teacher modifies it.
-        // setObjective(receivedObjective); // Uncomment if you want to sync objective from server
-    });
-
-    // Cleanup: Remove listeners when component unmounts or socket/sessionCode changes
-    return () => {
-      console.log('Header: Cleaning up Socket.IO listeners.');
-      if (socket) { // Ensure socket exists before removing listeners
-        socket.off('objectiveUpdate');
-      }
-      // NO LONGER call socket.disconnect() here, as SocketProvider manages the global connection.
-      // The socket itself is stable across component mounts/unmounts.
+    // This function will be passed to Login/Register to close the modal or switch views
+    // If you're using a modal for Login/Register, ensure this aligns with your modal logic.
+    const closeModal = () => {
+        // This might be a placeholder. If Login/Register are not in a modal,
+        // this function might reset states or redirect instead.
+        // For now, it could just ensure we're not showing register form if toggled back to login
+        setShowRegisterForm(false); // Default to showing Login if this is called
     };
-  }, [socket, sessionCode]); // Dependencies now include `socket`
 
-  // --- Objective emission (with debounce) ---
-  useEffect(() => {
-    // IMPORTANT: Ensure socket is available and connected before emitting
-    if (!socket || !socket.connected || !sessionCode) {
-      console.warn("Header: Socket not connected or sessionCode missing, cannot emit objective.");
-      return;
-    }
+    return (
+        <div className="header">
+            {/* ... (other Header elements like fullscreen button, logo, objective input) ... */}
 
-    const handler = setTimeout(() => {
-      console.log(`Header: Emitting setObjective for session ${sessionCode} with objective: ${objective}`);
-      socket.emit('setObjective', { sessionCode, objectiveText: objective });
-    }, 500); // Debounce for 500ms
+            {/* Authentication/Session Management Area */}
+            {!isAuthenticated ? (
+                // If not authenticated, show either the Register or Login form
+                showRegisterForm ? (
+                    <Register
+                        closeModal={closeModal} // Pass a way to close or switch view if needed
+                        // The Register component doesn't directly set auth state after registration,
+                        // it nudges back to Login. So onAuthAndSessionSuccess is for Login.
+                    />
+                ) : (
+                    <Login
+                        onAuthSuccess={onAuthAndSessionSuccess} // Login will set the session/auth state
+                        closeModal={closeModal} // Pass a way to close or switch view if needed
+                        onSwitchToRegister={() => setShowRegisterForm(true)} // Allow Login to switch to Register
+                    />
+                )
+            ) : (
+                // If authenticated, show session details and controls
+                <div>
+                    <p>Logged in as: {teacherId}</p> {/* Display teacherId (or username if you have it) */}
+                    {sessionCode ? (
+                        <p>Your Session Code: <strong>{sessionCode}</strong></p>
+                    ) : (
+                        // If logged in but no session code yet, allow them to generate one
+                        <GenerateStudentCode
+                            teacherId={teacherId}
+                            setSessionCode={setSessionCode} // GenerateStudentCode needs to update this state
+                        />
+                    )}
+                </div>
+            )}
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [objective, sessionCode, socket]); // Dependencies now include `socket`
-
-  // --- Fullscreen Toggle ---
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  }
-
-  // --- JSX for Header ---
-  return (
-    <div>
-      <div className="header">
-        <button onClick={toggleFullscreen} className="button-fullscreen">
-          <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Fullscreen" />
-        </button>
-        <img className="styled-image logo" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
-        <input
-          className="input-text"
-          type="text"
-          placeholder="Objective: To understand how to use Teacher Toolkit"
-          value={objective}
-          onChange={(e) => setObjective(e.target.value)}
-        ></input>
-        <GenerateStudentCode
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          teacherId={teacherId}
-          setteacherId={setteacherId}
-          sessionCode={sessionCode}
-          setSessionCode={setSessionCode}
-          // NO LONGER PASSING `socket` PROP HERE! GenerateStudentCode will use useSocket()
-        />
-
-        {/* Integrate the Subtitles Component for Teacher */}
-        {/* NO LONGER PASSING `socket` PROP HERE! Subtitles will use useSocket() */}
-        {sessionCode && ( // Only render subtitles if sessionCode is present
-            <Subtitles
-                sessionCode={sessionCode}
-                isTeacherView={true}
-            />
-        )}
-      </div>
-    </div>
-  );
+            {/* Subtitles component - only show if a sessionCode is available (after login/generation) */}
+            {sessionCode && (
+                <Subtitles
+                    sessionCode={sessionCode}
+                    isTeacherView={true}
+                />
+            )}
+            {/* ... rest of your Header elements ... */}
+        </div>
+    );
 }

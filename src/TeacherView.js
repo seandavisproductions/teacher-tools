@@ -1,56 +1,50 @@
-import { useState } from 'react';
-import "./index.css";
-import { Header } from "./Header";
-import { CountdownTimerBoard } from "./CountdownTimerBoard";
-import { Buttons } from "./Buttons";
-import { ExerciseInstructions } from "./ExerciseInstructions";
-import { Presentation } from "./Presentation";
-import { SoundBoard } from "./SoundBoard";
-import { ExitTicket } from "./ExitTicket";
-import { Footer } from "./Footer";
-import { Welcome } from "./Welcome";
+// src/TeacherView.js
+import React, { useState, useEffect, useContext } from 'react';
+import { Header } from './Header';
+import { CountdownTimerBoard } from './CountdownTimerBoard';
+import { ExerciseInstruction } from './ExerciseInstruction';
+import { Buttons } from './Buttons';
+import { Footer } from './Footer';
+import { SocketContext as GlobalSocketContext } from './context/SocketContext'; // To access the socket and its update function
 
+export function TeacherView() {
+  const [sessionCode, setSessionCode] = useState(null);
+  const [teacherId, setTeacherId] = useState(null);
+  // Get the socket instance and the function to update session code in the socket context
+  const { socket, updateSessionCodeForSocket } = useContext(GlobalSocketContext);
 
+  // This useEffect runs whenever sessionCode changes.
+  // It tells the SocketContext to emit 'joinSession' with the new code.
+  useEffect(() => {
+    if (sessionCode && updateSessionCodeForSocket) {
+      console.log('TeacherView: Notifying SocketContext with new sessionCode:', sessionCode);
+      updateSessionCodeForSocket(sessionCode);
+    }
+  }, [sessionCode, updateSessionCodeForSocket]); // Re-run if sessionCode or the update function changes
 
-const tools = [
-  { title: "Exercise Instructions", id: 1 },
-  { title: "Presentation", id: 2 },
-  { title: "Exit Ticket", id: 3 },
-  { title: "Sound Board", id: 4 }
-];
+  // This handler is passed down to the Login component (via Header).
+  // It updates the TeacherView's state after a successful login/session generation.
+  const handleAuthAndSessionSuccess = (code, id) => {
+    console.log('TeacherView: Auth/Session success! Setting sessionCode:', code, 'teacherId:', id);
+    setSessionCode(code);
+    setTeacherId(id);
+    // The useEffect above will handle calling updateSessionCodeForSocket
+  };
 
-
-export const TeacherView = ({timeLeft, setTimeLeft, teacherId, setteacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated}) => {
-
-  const [curOpen, setCurOpen] = useState(0)
-  const [isOpen, setIsOpen] = useState(false)
-  
   return (
-  
-  <div className="main-content">
-      <Header setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated} teacherId={teacherId} setteacherId={setteacherId} setSessionCode={setSessionCode} sessionCode={sessionCode}/>
-      <CountdownTimerBoard isAuthenticated={isAuthenticated} sessionCode={sessionCode}/>
-      <Buttons tools={tools} isAuthenticated={isAuthenticated} curOpen={curOpen} setIsOpen={setIsOpen} setCurOpen={setCurOpen}/>
-      
-  
-  {curOpen > 0 ? (
-    <>
-      {curOpen === 1 && (
-        <ExerciseInstructions/>
-      )}
-      {curOpen === 2 && (
-        <Presentation/>
-      )}
-      {curOpen === 3 && (
-        <ExitTicket />
-      )}
-      {curOpen === 4 && <SoundBoard />}
-    </>
-  ) : (
-    <Welcome />
-  )}
-      <Footer />
+    <div className="teacher-view-container">
+      <Header
+        sessionCode={sessionCode}
+        setSessionCode={setSessionCode} // Pass this down so Login/Generate can update it
+        teacherId={teacherId}
+        setTeacherId={setTeacherId}   // Pass this down so Login/Generate can update it
+        onAuthAndSessionSuccess={handleAuthAndSessionSuccess} // Pass the success handler to Header
+      />
+      {/* Pass sessionCode and teacherId down to other components that need them */}
+      <CountdownTimerBoard sessionCode={sessionCode} teacherId={teacherId} />
+      <Buttons sessionCode={sessionCode} teacherId={teacherId} />
+      <ExerciseInstruction sessionCode={sessionCode} teacherId={teacherId} />
+      <Footer sessionCode={sessionCode} teacherId={teacherId} />
     </div>
-      
   );
-};
+}
