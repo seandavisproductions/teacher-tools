@@ -5,7 +5,7 @@ import { TimerClock } from "./TimerClock"
 // Replace with your backend URL
 const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com'; // Or your Render backend URL
 
-const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Keep isAuthenticated prop for backend emits
+export const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Keep isAuthenticated prop for backend emits
     const [timeLeft, setTimeLeft] = useState(0); // Current time left in seconds
     const [isRunning, setIsRunning] = useState(false);
     const [customTime, setCustomTime] = useState(''); // Holds custom minutes input
@@ -210,5 +210,3 @@ const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Keep isAu
         </div>
     );
 };
-
-export default CountdownTimerBoard;
