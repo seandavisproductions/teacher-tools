@@ -1,64 +1,71 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
+// Assume you have a TimerClock component. If not, you'll need to create a simple one
+// or just integrate its logic directly into this component.
+// For example:
+const TimerClock = ({ isRunning, timeLeft }) => {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    return (
+        <div style={{ fontSize: '3em', margin: '20px 0' }}>
+            {formattedTime}
+        </div>
+    );
+};
+
+
 // Replace with your backend URL
 const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com'; // Or your Render backend URL
 
-// Rename the component to CountdownTimerBoard
-const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Prop renamed to isAuthenticated
-    const [timeLeft, setTimeLeft] = useState(0); // Current time left
+const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => {
+    const [timeLeft, setTimeLeft] = useState(0); // Current time left in seconds
     const [isRunning, setIsRunning] = useState(false);
-    const [inputMinutes, setInputMinutes] = useState('');
-    const [inputSeconds, setInputSeconds] = useState('');
+    const [customTime, setCustomTime] = useState(''); // Holds custom minutes input
 
-    const timerIntervalRef = useRef(null); // Ref to hold the interval ID
+    const timerIntervalRef = useRef(null); // Ref to hold the interval ID for local countdown
     const socketRef = useRef(null); // Ref to hold the Socket.IO client instance
-    const lastServerSyncTimeRef = useRef(Date.now()); // To track when the timer was last synced from the server
+    const lastServerSyncTimeRef = useRef(Date.now()); // To track when timer was last synced from server
 
+    // Effect for Socket.IO connection and listeners
     useEffect(() => {
-        // Initialize Socket.IO connection
-        socketRef.current = io('https://teacher-toolkit-back-end.onrender.com');
+        socketRef.current = io(SOCKET_SERVER_URL); // NEW: Uses the variable
 
         socketRef.current.on('connect', () => {
             console.log('Connected to Socket.IO server!');
-            // Join the session room as soon as connected
             if (sessionCode) {
                 socketRef.current.emit('joinSession', sessionCode);
             }
         });
 
-        // Listen for timer updates from the server
         socketRef.current.on('timerUpdate', (data) => {
             console.log('Received timerUpdate:', data);
             const { isRunning: serverIsRunning, timeLeft: serverTimeLeft } = data;
 
-            // Update state based on server's most recent known timer state
             setIsRunning(serverIsRunning);
             setTimeLeft(serverTimeLeft);
-            lastServerSyncTimeRef.current = Date.now(); // Mark when we last received an update
+            lastServerSyncTimeRef.current = Date.now();
 
-            // If the server says it's running, ensure our local interval is active
             if (serverIsRunning) {
-                // Clear any existing interval to prevent duplicates or stale timers
                 if (timerIntervalRef.current) {
                     clearInterval(timerIntervalRef.current);
                 }
-                // Start a new interval to count down locally
                 timerIntervalRef.current = setInterval(() => {
                     const elapsedTimeSinceLastSync = Date.now() - lastServerSyncTimeRef.current;
                     const newTimeLeft = serverTimeLeft - Math.floor(elapsedTimeSinceLastSync / 1000);
 
                     if (newTimeLeft <= 0) {
                         setTimeLeft(0);
-                        setIsRunning(false); // Timer has finished
+                        setIsRunning(false);
                         clearInterval(timerIntervalRef.current);
                         timerIntervalRef.current = null;
                     } else {
                         setTimeLeft(newTimeLeft);
                     }
-                }, 1000); // Update every second
+                }, 1000);
             } else {
-                // If server says it's paused or stopped, ensure our local timer also stops
                 if (timerIntervalRef.current) {
                     clearInterval(timerIntervalRef.current);
                     timerIntervalRef.current = null;
@@ -66,18 +73,17 @@ const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Prop rena
             }
         });
 
-        // Listen for timer reset from the server
         socketRef.current.on('timerReset', (data) => {
             console.log('Received timerReset:', data);
             setTimeLeft(0);
             setIsRunning(false);
+            setCustomTime(''); // Clear custom input on reset
             if (timerIntervalRef.current) {
                 clearInterval(timerIntervalRef.current);
                 timerIntervalRef.current = null;
             }
         });
 
-        // Cleanup on component unmount
         return () => {
             if (socketRef.current) {
                 socketRef.current.disconnect();
@@ -86,96 +92,99 @@ const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Prop rena
                 clearInterval(timerIntervalRef.current);
             }
         };
-    }, [sessionCode]); // Dependency array: Re-run effect if sessionCode changes
+    }, [sessionCode]);
 
-    // This effect handles the local countdown *after* the state (timeLeft, isRunning) has been set
-    // by either the teacher's input or a server update.
+    // This effect ensures local interval is cleared when timer stops or runs out
     useEffect(() => {
         if (isRunning && timeLeft > 0) {
-            // No need to set interval here, it's already set in the socket.on('timerUpdate') listener
-            // when the server indicates the timer is running. This prevents duplicate intervals
-            // if local changes were also triggering an interval.
+            // Interval is managed by `socket.on('timerUpdate')` to stay in sync with server
+            // No need to set interval here again
         } else if ((!isRunning && timerIntervalRef.current) || (timeLeft <= 0 && timerIntervalRef.current)) {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
             if (timeLeft <= 0) {
-                setIsRunning(false); // Ensure isRunning is false when time runs out
+                setIsRunning(false);
             }
         }
-        // This effect mainly ensures intervals are cleared when timer stops or runs out.
     }, [isRunning, timeLeft]);
 
+    // --- Teacher Control Functions (only callable if isAuthenticated) ---
 
-    const handleSetTimer = () => {
-        const minutes = parseInt(inputMinutes) || 0;
-        const seconds = parseInt(inputSeconds) || 0;
-        const initialTime = (minutes * 60) + seconds;
-
-        if (initialTime > 0) {
-            setTimeLeft(initialTime);
-            setIsRunning(false); // Teacher sets it, but doesn't start until they click 'Start'
-            if (isAuthenticated && socketRef.current) { // Check isAuthenticated here
-                socketRef.current.emit('startTimer', {
-                    sessionCode,
-                    isRunning: false, // Teacher sets, not auto-starts
-                    timeLeft: initialTime
-                });
-            }
+    // Function to emit timer state to backend
+    const emitTimerState = (running, time) => {
+        if (isAuthenticated && socketRef.current) {
+            socketRef.current.emit('startTimer', {
+                sessionCode,
+                isRunning: running,
+                timeLeft: time
+            });
         }
     };
 
-    const handleStartPause = () => {
-        if (!isAuthenticated) return; // Only authenticated user can start/pause
+    // New: Toggle the timer. When starting, if no time is set yet and a custom time is provided, use it.
+    const toggleStartStop = () => {
+        if (!isAuthenticated) return; // Only authenticated users can control
 
-        if (isRunning) {
-            // Pausing
-            setIsRunning(false);
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
+        if (!isRunning) {
+            // On starting, if there's no preset time but a valid custom time is provided
+            let timeToStart = timeLeft;
+            if (timeLeft === 0 && customTime.trim() !== "") {
+                const customSeconds = parseInt(customTime, 10) * 60;
+                if (!isNaN(customSeconds) && customSeconds > 0) {
+                    timeToStart = customSeconds;
+                    setTimeLeft(customSeconds); // Update local state immediately
+                }
+            } else if (timeLeft === 0) {
+                // If no time is set and no custom time, alert or do nothing.
+                alert("Please set a time before starting the timer.");
+                return;
             }
-            if (socketRef.current) {
-                socketRef.current.emit('pauseTimer', { sessionCode, timeLeft });
-            }
+            setIsRunning(true);
+            emitTimerState(true, timeToStart); // Emit the new state to the server
         } else {
-            // Starting
-            if (timeLeft > 0) {
-                setIsRunning(true);
-                lastServerSyncTimeRef.current = Date.now(); // Sync point for local countdown
-                if (socketRef.current) {
-                    socket.current.emit('startTimer', {
-                        sessionCode,
-                        isRunning: true,
-                        timeLeft: timeLeft
-                    });
-                }
-            } else {
-                // If timeLeft is 0 (e.g., after reset), use initial input values
-                const minutes = parseInt(inputMinutes) || 0;
-                const seconds = parseInt(inputSeconds) || 0;
-                const initialTimeFromInput = (minutes * 60) + seconds;
-                if (initialTimeFromInput > 0) {
-                    setTimeLeft(initialTimeFromInput);
-                    setIsRunning(true);
-                    lastServerSyncTimeRef.current = Date.now();
-                    if (socketRef.current) {
-                        socketRef.current.emit('startTimer', {
-                            sessionCode,
-                            isRunning: true,
-                            timeLeft: initialTimeFromInput
-                        });
-                    }
-                }
-            }
+            // Stopping (Pausing)
+            setIsRunning(false);
+            emitTimerState(false, timeLeft); // Emit the paused state to the server
         }
     };
 
-    const handleReset = () => {
-        if (!isAuthenticated) return; // Only authenticated user can reset
+    // New: Handle change in custom time input
+    const handleCustomChange = (e) => {
+        if (!isAuthenticated) return; // Only authenticated users can set custom time
+
+        const val = e.target.value;
+        setCustomTime(val); // Update customTime state
+
+        // Calculate seconds from minutes for immediate display (if not running)
+        const minutes = parseInt(val, 10);
+        if (!isNaN(minutes) && minutes > 0) {
+            // If timer is not running, immediately reflect the change
+            if (!isRunning) {
+                 setTimeLeft(minutes * 60);
+                 // No need to emit here, emit only when starting/setting explicitly
+            }
+        } else if (!isRunning) {
+            setTimeLeft(0); // If input is cleared or invalid and not running
+        }
+    };
+
+    // New: Start timer with a preset duration (e.g., 5 min, 10 min)
+    const startPresetTimer = (durationSeconds) => {
+        if (!isAuthenticated) return; // Only authenticated users can start presets
+
+        setTimeLeft(durationSeconds);
+        setIsRunning(true);
+        setCustomTime(''); // Clear custom input if a preset is used
+
+        emitTimerState(true, durationSeconds); // Emit the preset start to the server
+    };
+
+    // Reset function (similar to before, but renamed for clarity)
+    const handleResetTimer = () => {
+        if (!isAuthenticated) return; // Only authenticated users can reset
         setTimeLeft(0);
         setIsRunning(false);
-        setInputMinutes('');
-        setInputSeconds('');
+        setCustomTime('');
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
@@ -185,96 +194,48 @@ const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Prop rena
         }
     };
 
-    const formatTime = (totalSeconds) => {
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    };
-
     return (
-        <div>
-            <h2>Timer: {formatTime(timeLeft)}</h2>
-
-            {isAuthenticated && ( // Conditional rendering based on isAuthenticated
-                <div>
-                    <input
-                        type="number"
-                        placeholder="Minutes"
-                        value={inputMinutes}
-                        onChange={(e) => setInputMinutes(e.target.value)}
-                        min="0"
-                    />
-                    <input
-                        type="number"
-                        placeholder="Seconds"
-                        value={inputSeconds}
-                        onChange={(e) => setInputSeconds(e.target.value)}
-                        min="0"
-                    />
-                    <button onClick={handleSetTimer}>Set Timer</button>
-                    <button onClick={handleStartPause}>
-                        {isRunning ? 'Pause' : 'Start'}
+        <div className="countdown-container">
+            <h3>Countdown Timer</h3>
+            {/* Conditional rendering for teacher controls */}
+            {isAuthenticated && (
+                <>
+                    <button
+                        onClick={toggleStartStop}
+                        className={!isRunning ? "teacher-button-open" : "teacher-button-close"}
+                    >
+                        {!isRunning ? "Start" : "Stop"}
                     </button>
-                    <button onClick={handleReset}>Reset</button>
+                    <button onClick={handleResetTimer}>Reset</button> {/* Add reset button */}
+                </>
+            )}
+
+            {/* Timer display (visible to everyone) */}
+            <TimerClock isRunning={isRunning} timeLeft={timeLeft}/>
+
+            {/* Buttons and Custom Input (only for authenticated users) */}
+            {isAuthenticated && (
+                <div className="buttons">
+                    <button onClick={() => startPresetTimer(5 * 60)}>5 Min</button>
+                    <button onClick={() => startPresetTimer(10 * 60)}>10 Min</button>
+                    <button onClick={() => startPresetTimer(15 * 60)}>15 Min</button>
+                    <button onClick={() => startPresetTimer(20 * 60)}>20 Min</button>
+                    <input
+                        className="input-box-1"
+                        type="number"
+                        placeholder="Custom (minutes)"
+                        value={customTime}
+                        onChange={handleCustomChange}
+                        min="0"
+                    />
                 </div>
             )}
 
-            {!isAuthenticated && ( // Message for non-authenticated users
+            {!isAuthenticated && (
                 <p>Waiting for the timer to be set and started by an authenticated user...</p>
             )}
         </div>
     );
 };
 
-export default CountdownTimerBoard; // Export with the new name
-
-// Toggle the timer. When starting, if no time is set yet and a custom time is provided, use it.
-  const toggleStartStop = () => {
-    if (!isRunning) {
-      // On starting, if there's no preset time but a valid custom time is provided
-      if (timeLeft === 0 && customTime.trim() !== "") {
-        const customSeconds = parseInt(customTime, 10) * 60;
-        if (!isNaN(customSeconds) && customSeconds > 0) {
-          setTimeLeft(customSeconds);
-        }
-      }
-      setIsRunning(true);
-    } else {
-      setIsRunning(false);
-    }
-  };
-
-  // Update customTime and update timeLeft when the teacher types a number.
-  // This updates immediately (if not running) so that the custom value is reflected.
-  const handleCustomChange = (e) => {
-    const val = e.target.value;
-    setCustomTime(val);
-    // Calculate seconds from minutes
-    const minutes = parseInt(val, 10);
-    if (!isNaN(minutes) && minutes > 0) {
-      setTimeLeft(minutes * 60);
-    } else {
-      setTimeLeft(0);
-    }
-  };
-
-  return (
-    <div className="countdown-container">
-      <h3>Countdown Timer</h3>
-      <button onClick={toggleStartStop} className={!isRunning ? "teacher-button-open" : "teacher-button-close"}>{!isRunning ? "Start" : "Stop"}</button>
-      <TimerClock isRunning={isRunning} timeLeft={timeLeft}/>
-      <div className="buttons">
-        <button onClick={() => startTimer(5 * 60)}>5 Min</button>
-        <button onClick={() => startTimer(10 * 60)}>10 Min</button>
-        <button onClick={() => startTimer(15 * 60)}>15 Min</button>
-        <button onClick={() => startTimer(20 * 60)}>20 Min</button>
-        <input
-          className="input-box-1"
-          type="number"
-          placeholder="Custom"
-          value={customTime}
-          onChange={handleCustomChange} />
-      </div>
-    </div>
-  );
-}
+export default CountdownTimerBoard;
