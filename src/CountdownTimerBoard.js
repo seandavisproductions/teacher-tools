@@ -1,22 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
-// Assume you have a TimerClock component. If not, you'll need to create a simple one
-// or just integrate its logic directly into this component.
-// For example:
-const TimerClock = ({ isRunning, timeLeft }) => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-    return (
-        <div style={{ fontSize: '3em', margin: '20px 0' }}>
-            {formattedTime}
-        </div>
-    );
-};
-
-
 // Replace with your backend URL
 const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com'; // Or your Render backend URL
 
