@@ -9,7 +9,7 @@ export const StudentView = ({ sessionCode }) => {
   const [timeLeft, setTimeLeft] = useState(0); // Local time for the timer
 
 
-  const socket = io("http://localhost:3000", {
+  const socket = io("https://teacher-toolkit-back-end.onrender.com", {
   withCredentials: true, // Ensure credentials are sent correctly
   extraHeaders: {
     "Access-Control-Allow-Origin": "*"
