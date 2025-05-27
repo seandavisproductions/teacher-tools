@@ -190,6 +190,41 @@ h3 {
   filter: blur(20px);
 }
 
+/* In your CSS file (e.g., App.css) */
+
+.popout-subtitle-container {
+    position: fixed; /* Fixes it relative to the viewport */
+    top: 0;          /* Aligns to the top edge */
+    left: 0;
+    width: 100%;     /* Spans the full width */
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+    color: white;    /* White text for contrast */
+    padding: 10px 20px;
+    box-sizing: border-box; /* Include padding in width */
+    text-align: center;
+    font-size: 1.5em; /* Adjust font size as needed */
+    z-index: 1000;   /* Ensure it's on top of other content */
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Adds some text clarity */
+    display: flex; /* Use flexbox for centering or alignment if multiple items */
+    align-items: center;
+    justify-content: center;
+    min-height: 50px; /* Give it a minimum height */
+}
+
+/* Optional: styling for the inline display if you want it different */
+.student-subtitle-inline-display {
+    /* Your existing styles for the inline subtitle display */
+    margin-top: 10px; /* Example */
+    font-size: 1em; /* Example */
+    color: #555; /* Example */
+}
+
+/* Ensure the header and other elements have appropriate z-index if they clash */
+.header {
+    position: relative; /* Or fixed/sticky, depending on your overall layout */
+    z-index: 500; /* Lower than popout, but still above main content */
+}
 .header {
   max-height: 120px;
   display: flex;

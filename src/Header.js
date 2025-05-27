@@ -1,17 +1,18 @@
+import { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import { GenerateStudentCode } from "./GenerateStudentCode";
-import { useState, useEffect, useRef } from "react"; // <-- Import useEffect, useRef
-import { io } from "socket.io-client"; // <-- Import io
+import { Subtitles } from "./subtitles"; // NEW: Import the Subtitles component
 
 // Define the Socket.IO server URL outside the component
-const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com'; // Adjust as needed
+const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
 
 export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated}) {
   const [objective, setObjective] = useState("");
-  const socketRef = useRef(null); // <-- NEW: Ref to hold socket instance
+  const socketRef = useRef(null); // Ref to hold socket instance
 
-  // Effect to manage Socket.IO connection and objective emission
+  // --- Socket.IO connection and objective emission ---
   useEffect(() => {
-    if (!socketRef.current) { // Initialize socket once
+    if (!socketRef.current) {
       socketRef.current = io(SOCKET_SERVER_URL, {
         withCredentials: true,
       });
@@ -22,16 +23,19 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, i
           socketRef.current.emit('joinSession', sessionCode);
         }
       });
-      // Optionally listen for objective updates from server to confirm
+
       socketRef.current.on('objectiveUpdate', (receivedObjective) => {
           console.log('Teacher Header received objectiveUpdate confirmation:', receivedObjective);
-          // You might not need to update `objective` state here if teacher is the source of truth
       });
+
+      // No longer need subtitle specific listeners here as Subtitles.js handles them
+      // socketRef.current.on('subtitleUpdate', (data) => { /* ... */ });
+      // socketRef.current.on('subtitleError', (message) => { /* ... */ });
+
       socketRef.current.on('disconnect', () => console.log('Teacher Header disconnected'));
       socketRef.current.on('connect_error', (err) => console.error('Teacher Header socket error:', err));
     }
 
-    // Join session if sessionCode becomes available or changes
     if (sessionCode && socketRef.current && socketRef.current.connected) {
       socketRef.current.emit('joinSession', sessionCode);
     }
@@ -41,27 +45,22 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, i
         socketRef.current.disconnect();
         socketRef.current = null;
       }
+      // No need to stop media recorder here, Subtitles component will handle its cleanup
     };
-  }, [sessionCode]); // Re-run if sessionCode changes
+  }, [sessionCode]);
 
-  // Effect to emit objective when it changes (debounced for performance)
   useEffect(() => {
-    if (socketRef.current && sessionCode && objective.trim() !== '') {
-      // Debounce: wait a bit after typing stops before sending
+    if (socketRef.current && sessionCode) {
       const handler = setTimeout(() => {
         socketRef.current.emit('setObjective', { sessionCode, objectiveText: objective });
-      }, 500); // Send after 500ms of no typing
-
+      }, 500);
       return () => {
         clearTimeout(handler);
       };
     }
-    // Also emit if objective is cleared
-    if (socketRef.current && sessionCode && objective.trim() === '') {
-        socketRef.current.emit('setObjective', { sessionCode, objectiveText: '' });
-    }
-  }, [objective, sessionCode]); // Re-run if objective or sessionCode changes
+  }, [objective, sessionCode]);
 
+  // --- Fullscreen Toggle ---
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -70,6 +69,7 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, i
     }
   }
 
+  // --- JSX for Header ---
   return (
     <div>
       <div className="header">
@@ -81,7 +81,7 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, i
           className="input-text"
           type="text"
           placeholder="Objective: To understand how to use Teacher Toolkit"
-          value={objective} // <-- Controlled input
+          value={objective}
           onChange={(e) => setObjective(e.target.value)}
         ></input>
         <GenerateStudentCode
@@ -92,6 +92,16 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, i
           sessionCode={sessionCode}
           setSessionCode={setSessionCode}
         />
+
+        {/* NEW: Integrate the Subtitles Component for Teacher */}
+        {/* Pass the socket instance, sessionCode, and specify it's the teacher view */}
+        {socketRef.current && sessionCode && (
+            <Subtitles
+                socket={socketRef.current}
+                sessionCode={sessionCode}
+                isTeacherView={true}
+            />
+        )}
       </div>
     </div>
   );

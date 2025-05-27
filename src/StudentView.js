@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { Footer } from "./Footer";
-import { TimerClock } from "./TimerClock"; // Assuming you have this
-// import { ObjectiveBox } from './ObjectiveBox'; // If you create a separate component for it
+import { TimerClock } from "./TimerClock";
 
-// Define the Socket.IO server URL outside the component
 const SOCKET_SERVER_URL = "https://teacher-toolkit-back-end.onrender.com";
 
 export const StudentView = ({ sessionCode: propSessionCode }) => {
@@ -17,11 +15,18 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
   const [isRunning, setIsRunning] = useState(false);
 
   // Objective state
-  const [objectiveText, setObjectiveText] = useState(""); // <-- NEW: State for objective
+  const [objectiveText, setObjectiveText] = useState("");
+
+  // Subtitle states
+  const [currentSubtitle, setCurrentSubtitle] = useState(""); // Raw subtitle from teacher
+  const [translatedSubtitle, setTranslatedSubtitle] = useState(""); // Translated subtitle for student
+  const [studentLanguage, setStudentLanguage] = useState('en'); // Default student translation language (ISO 639-1 code)
+  const [showPopoutSubtitles, setShowPopoutSubtitles] = useState(false); // NEW: State for pop-out visibility
 
   const socketRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const lastServerSyncTimeRef = useRef(Date.now());
+  const translationRequestTimeoutRef = useRef(null); // To debounce translation requests
 
   // Effect to initialize socket connection once
   useEffect(() => {
@@ -38,7 +43,6 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
       });
 
       socketRef.current.on("timerUpdate", (data) => {
-        console.log("Received timer update:", data);
         const { isRunning: serverIsRunning, timeLeft: serverTimeLeft } = data;
 
         setIsRunning(serverIsRunning);
@@ -80,10 +84,34 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
         }
       });
 
-      // <-- NEW: Listen for objective updates from the server
       socketRef.current.on("objectiveUpdate", (objective) => {
         console.log("Received objective update:", objective);
         setObjectiveText(objective);
+      });
+
+      socketRef.current.on("subtitleUpdate", (data) => {
+        console.log("Student received raw subtitle:", data);
+        setCurrentSubtitle(data.text);
+        if (data.isFinal) {
+            requestTranslation(data.text, studentLanguage);
+        } else {
+            if (translationRequestTimeoutRef.current) {
+                clearTimeout(translationRequestTimeoutRef.current);
+            }
+            translationRequestTimeoutRef.current = setTimeout(() => {
+                requestTranslation(data.text, studentLanguage);
+            }, 300);
+        }
+      });
+
+      socketRef.current.on("translatedSubtitle", (translatedText) => {
+        console.log("Student received translated subtitle:", translatedText);
+        setTranslatedSubtitle(translatedText);
+      });
+
+      socketRef.current.on("subtitleError", (message) => {
+        console.error('Subtitle error from server:', message);
+        setTranslatedSubtitle(`Error: ${message}`);
       });
 
       socketRef.current.on("disconnect", () => {
@@ -109,8 +137,11 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
+       if (translationRequestTimeoutRef.current) {
+           clearTimeout(translationRequestTimeoutRef.current);
+       }
     };
-  }, []);
+  }, [currentSessionCode, studentLanguage]);
 
   // Effect to join session room when currentSessionCode changes or socket connects
   useEffect(() => {
@@ -119,6 +150,13 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
       console.log("Re-attempted to join session (code changed or socket connected):", currentSessionCode);
     }
   }, [currentSessionCode]);
+
+  // Function to request translation from the backend
+  const requestTranslation = (text, targetLanguageCode) => {
+      if (socketRef.current && text && targetLanguageCode) {
+          socketRef.current.emit('requestTranslation', { text, targetLanguageCode });
+      }
+  };
 
   // Validate the entered session code with the backend.
   const handleSubmit = async () => {
@@ -166,8 +204,8 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
         </div>
       ) : (
         <div className="student-app">
-          {/* NEW: Student Header */}
-          <div className="header"> {/* Use the same class as teacher's header for styling */}
+          {/* Student Header */}
+          <div className="header">
             <button onClick={toggleFullscreen} className="button-fullscreen">
               <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Fullscreen" />
             </button>
@@ -176,13 +214,39 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
             <div className="objective-display">
                 <p>Objective: {objectiveText || "Waiting for teacher to set objective..."}</p>
             </div>
-            {/* NEW: TimerClock directly in the header area if you want it prominent */}
             <TimerClock timeLeft={timeLeft} isRunning={isRunning} />
           </div>
 
-          {/* Other student view content can go here if needed */}
-          <p>Welcome to the Student View for session: **{currentSessionCode}**</p> {/* Display session code */}
+          {/* Student's Subtitle Area (always present but can be hidden via CSS if you prefer) */}
+          <div className="student-subtitle-area">
+            <select value={studentLanguage} onChange={(e) => setStudentLanguage(e.target.value)}>
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="it">Italian</option>
+              {/* Add more language options (ISO 639-1 codes) supported by Google Translate */}
+            </select>
+            {/* Toggle button for pop-out subtitles */}
+            <button onClick={() => setShowPopoutSubtitles(!showPopoutSubtitles)}>
+                {showPopoutSubtitles ? 'Hide Pop-out Subtitles' : 'Show Pop-out Subtitles'}
+            </button>
+            <div className="student-subtitle-inline-display"> {/* Inline display */}
+                <p>Subtitles: {translatedSubtitle || "Waiting for teacher to speak..."}</p>
+            </div>
+          </div>
 
+          {/* NEW: Pop-out Subtitle Display */}
+          {showPopoutSubtitles && (
+              <div className="popout-subtitle-container">
+                  <p>{translatedSubtitle || "Waiting for teacher to speak..."}</p>
+                  {/* Optionally, you could add a close button here */}
+                  {/* <button onClick={() => setShowPopoutSubtitles(false)}>X</button> */}
+              </div>
+          )}
+
+          {/* Other student view content */}
+          <p>Welcome to the Student View for session: **{currentSessionCode}**</p>
 
           <Footer />
         </div>
