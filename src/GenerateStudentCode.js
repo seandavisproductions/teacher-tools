@@ -72,6 +72,7 @@ export function GenerateStudentCode({ teacherId, sessionCode, setSessionCode, is
               teacherId={teacherId}
               setteacherId={setteacherId}
               closeModal={() => setShowLogin(false)}
+              
             />
           </div>
         </div>

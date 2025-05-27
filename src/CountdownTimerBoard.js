@@ -1,100 +1,46 @@
+// src/CountdownTimerBoard.js
 import React, { useState, useEffect, useRef } from 'react';
-import { TimerClock } from "./TimerClock"
-import { useSocket } from './context/SocketContext';
+import { TimerClock } from "./TimerClock";
+// REMOVED: import { useSocket } from './context/SocketContext'; // No longer needed for standalone timer
 
-// REMOVE: No longer needed here as socket comes from context
-// const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
-
-export const CountdownTimerBoard = ({ sessionCode }) => {
+export const CountdownTimerBoard = () => { // sessionCode prop removed
     const [timeLeft, setTimeLeft] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [customTime, setCustomTime] = useState('');
 
     const timerIntervalRef = useRef(null); // Ref to hold the interval ID for local countdown
-    // REMOVE: No longer need socketRef as useSocket will provide the instance
-    // const socketRef = useRef(null);
-    const lastServerSyncTimeRef = useRef(Date.now()); // To track when timer was last synced from server
 
-    // 1. Get the socket instance from context
-    const socket = useSocket(); // <-- This is where you get the socket!
-
-    // Effect for Socket.IO listeners
-    // This effect now ONLY focuses on setting up listeners on the shared socket.
+    // This useEffect now manages only the local countdown interval
     useEffect(() => {
-        // IMPORTANT: Ensure the socket is available before trying to set up listeners
-        if (!socket || !sessionCode) {
-            console.warn("CountdownTimerBoard: Socket or sessionCode not available (yet).");
-            return;
+        if (isRunning && timeLeft > 0) {
+            timerIntervalRef.current = setInterval(() => {
+                setTimeLeft(prevTime => {
+                    const newTime = prevTime - 1;
+                    if (newTime <= 0) {
+                        clearInterval(timerIntervalRef.current);
+                        timerIntervalRef.current = null;
+                        setIsRunning(false); // Stop running when time hits zero
+                        return 0;
+                    }
+                    return newTime;
+                });
+            }, 1000);
+        } else if (!isRunning && timerIntervalRef.current) {
+            // Clear interval if timer is stopped but interval is still active
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
         }
 
-        console.log('CountdownTimerBoard: Setting up Socket.IO listeners for session:', sessionCode);
-
-        // This listener is critical for server-to-client synchronization
-        socket.on('timerUpdate', (data) => {
-            console.log('CountdownTimerBoard: Received timerUpdate from server:', data);
-            const { isRunning: serverIsRunning, timeLeft: serverTimeLeft } = data;
-
-            // Stop local interval first to prevent conflicts
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-            }
-
-            // Always update state based on server's truth
-            setIsRunning(serverIsRunning);
-            setTimeLeft(serverTimeLeft);
-            lastServerSyncTimeRef.current = Date.now();
-
-            // If server says timer is running, start local interval again
-            if (serverIsRunning && serverTimeLeft > 0) {
-                timerIntervalRef.current = setInterval(() => {
-                    setTimeLeft(prevTime => {
-                        const newTime = prevTime - 1;
-                        if (newTime <= 0) {
-                            clearInterval(timerIntervalRef.current);
-                            timerIntervalRef.current = null;
-                            setIsRunning(false);
-                            return 0;
-                        }
-                        return newTime;
-                    });
-                }, 1000);
-            }
-        });
-
-        socket.on('timerReset', (data) => {
-            console.log('CountdownTimerBoard: Received timerReset from server:', data);
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
-            }
-            setTimeLeft(0);
-            setIsRunning(false);
-            setCustomTime('');
-        });
-
-        // Cleanup: Remove listeners when component unmounts or socket/sessionCode changes
+        // Cleanup: Clear interval when component unmounts or isRunning/timeLeft state changes
         return () => {
-            console.log('CountdownTimerBoard: Cleaning up Socket.IO listeners.');
-            if (socket) { // Ensure socket exists before removing listeners
-                socket.off('timerUpdate');
-                socket.off('timerReset');
-            }
             if (timerIntervalRef.current) {
                 clearInterval(timerIntervalRef.current);
             }
         };
-    }, [socket, sessionCode]); // Dependencies now include `socket` itself
+    }, [isRunning, timeLeft]); // Dependencies are now purely local state
 
-    // 2. Local Timer Control and Server Communication
-    // These functions now use the `socket` variable from `useSocket()` directly.
+    // Local Timer Control Functions (no server communication)
     const toggleStartStop = () => {
-        // IMPORTANT: Check if socket is connected before emitting
-        if (!socket || !socket.connected) {
-            console.warn('Socket not connected, cannot sync timer with server.');
-            alert('Cannot start/stop timer: Not connected to real-time services.');
-            return;
-        }
-
         if (!isRunning) { // If currently stopped, try to start
             let timeToStart = timeLeft;
             if (timeLeft === 0 && customTime.trim() !== "") {
@@ -107,46 +53,14 @@ export const CountdownTimerBoard = ({ sessionCode }) => {
                 return;
             }
 
-            // Immediately start local timer for responsiveness
+            // Start local timer
             setIsRunning(true);
-            setTimeLeft(timeToStart);
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-            }
-            timerIntervalRef.current = setInterval(() => {
-                setTimeLeft(prevTime => {
-                    const newTime = prevTime - 1;
-                    if (newTime <= 0) {
-                        clearInterval(timerIntervalRef.current);
-                        timerIntervalRef.current = null;
-                        setIsRunning(false);
-                        return 0;
-                    }
-                    return newTime;
-                });
-            }, 1000);
-
-            // Emit to server
-            socket.emit('startTimer', { // Use `socket` directly
-                sessionCode,
-                isRunning: true,
-                timeLeft: timeToStart
-            });
-
+            setTimeLeft(timeToStart); // Set to the initial time or current time
+            // The useEffect above will pick up `isRunning` and start the interval
         } else { // If currently running, try to stop
-            // Immediately stop local timer for responsiveness
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
-            }
+            // Stop local timer
             setIsRunning(false);
-
-            // Emit to server
-            socket.emit('startTimer', { // Use `socket` directly
-                sessionCode,
-                isRunning: false,
-                timeLeft: timeLeft // Send current local timeLeft
-            });
+            // The useEffect above will pick up `!isRunning` and clear the interval
         }
     };
 
@@ -156,7 +70,7 @@ export const CountdownTimerBoard = ({ sessionCode }) => {
 
         const minutes = parseInt(val, 10);
         if (!isNaN(minutes) && minutes > 0) {
-            if (!isRunning) {
+            if (!isRunning) { // Only set time if not running to avoid interrupting
                  setTimeLeft(minutes * 60);
             }
         } else if (!isRunning) {
@@ -165,63 +79,27 @@ export const CountdownTimerBoard = ({ sessionCode }) => {
     };
 
     const startPresetTimer = (durationSeconds) => {
-        // IMPORTANT: Check if socket is connected before emitting
-        if (!socket || !socket.connected) {
-            console.warn('Socket not connected, cannot sync timer with server.');
-            alert('Cannot start preset timer: Not connected to real-time services.');
-            return;
-        }
-
-        // Stop any running local timer first
+        // Stop any running local timer first if one exists
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
         }
 
-        // Immediately start local timer
         setTimeLeft(durationSeconds);
         setIsRunning(true);
-        setCustomTime('');
-
-        timerIntervalRef.current = setInterval(() => {
-            setTimeLeft(prevTime => {
-                const newTime = prevTime - 1;
-                if (newTime <= 0) {
-                    clearInterval(timerIntervalRef.current);
-                    timerIntervalRef.current = null;
-                    setIsRunning(false);
-                    return 0;
-                }
-                return newTime;
-            });
-        }, 1000);
-
-        // Emit to server
-        socket.emit('startTimer', { // Use `socket` directly
-            sessionCode,
-            isRunning: true,
-            timeLeft: durationSeconds
-        });
+        setCustomTime(''); // Clear custom input when using preset
+        // The useEffect above will pick up `isRunning` and start the interval
     };
 
     const handleResetTimer = () => {
-        // IMPORTANT: Check if socket is connected before emitting
-        if (!socket || !socket.connected) {
-            console.warn('Socket not connected, cannot sync timer with server.');
-            alert('Cannot reset timer: Not connected to real-time services.');
-            return;
-        }
-
-        // Immediately reset local timer
+        // Stop local timer
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
         }
         setTimeLeft(0);
         setIsRunning(false);
-        setCustomTime('');
-
-        // Emit to server
-        socket.emit('resetTimer', sessionCode); // Use `socket` directly
+        setCustomTime(''); // Clear custom input on reset
     };
 
     return (
