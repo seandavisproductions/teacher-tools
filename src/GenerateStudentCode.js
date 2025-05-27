@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Login } from "./Login";
-import { io } from "socket.io-client";
-const socket = io("https://teacher-toolkit-back-end.onrender.com");
-
+import {socket} from "./Socket";
 export function GenerateStudentCode({ teacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated, setteacherId }) {
   const [showLogin, setShowLogin] = useState(false);
 

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import { TimerClock } from "./TimerClock";
-const socket = io("https://teacher-toolkit-back-end.onrender.com");
-
+import {socket} from "./Socket";
 
 
 export function CountdownTimerBoard({sessionCode}) {
