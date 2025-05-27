@@ -1,64 +1,67 @@
-import { useState, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
+import React, { useState, useEffect, useRef } from "react";
 import { GenerateStudentCode } from "./GenerateStudentCode";
-import { Subtitles } from "./subtitles"; // NEW: Import the Subtitles component
+import { Subtitles } from "./subtitles"; // Import the Subtitles component
+import { useSocket } from './context/SocketContext'; // Import the useSocket hook
 
-// Define the Socket.IO server URL outside the component
-const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
+// REMOVE: No longer needed here as socket comes from context
+// const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
 
-export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated}) {
+export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated }) {
   const [objective, setObjective] = useState("");
-  const socketRef = useRef(null); // Ref to hold socket instance
+  // REMOVE: No longer need socketRef as useSocket will provide the instance
+  // const socketRef = useRef(null);
 
-  // --- Socket.IO connection and objective emission ---
+  // Get the socket instance from context
+  const socket = useSocket(); // <-- Get the socket instance here!
+
+  // --- Socket.IO listeners and joinSession logic ---
   useEffect(() => {
-    if (!socketRef.current) {
-      socketRef.current = io(SOCKET_SERVER_URL, {
-        withCredentials: true,
-      });
-
-      socketRef.current.on('connect', () => {
-        console.log('Teacher Header connected to socket');
-        if (sessionCode) {
-          socketRef.current.emit('joinSession', sessionCode);
-        }
-      });
-
-      socketRef.current.on('objectiveUpdate', (receivedObjective) => {
-          console.log('Teacher Header received objectiveUpdate confirmation:', receivedObjective);
-      });
-
-      // No longer need subtitle specific listeners here as Subtitles.js handles them
-      // socketRef.current.on('subtitleUpdate', (data) => { /* ... */ });
-      // socketRef.current.on('subtitleError', (message) => { /* ... */ });
-
-      socketRef.current.on('disconnect', () => console.log('Teacher Header disconnected'));
-      socketRef.current.on('connect_error', (err) => console.error('Teacher Header socket error:', err));
+    // IMPORTANT: Ensure socket is available before setting up listeners
+    if (!socket || !sessionCode) {
+      console.warn("Header: Socket or sessionCode not available (yet).");
+      return;
     }
 
-    if (sessionCode && socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit('joinSession', sessionCode);
+    console.log('Header: Setting up Socket.IO listeners for session:', sessionCode);
+
+    // No need for 'connect' listener here, as SocketProvider handles global connection
+    // and joinSession.
+
+    socket.on('objectiveUpdate', (receivedObjective) => {
+        console.log('Teacher Header received objectiveUpdate confirmation:', receivedObjective);
+        // You might want to update the local objective state here if the server confirms it,
+        // or if another teacher modifies it.
+        // setObjective(receivedObjective); // Uncomment if you want to sync objective from server
+    });
+
+    // Cleanup: Remove listeners when component unmounts or socket/sessionCode changes
+    return () => {
+      console.log('Header: Cleaning up Socket.IO listeners.');
+      if (socket) { // Ensure socket exists before removing listeners
+        socket.off('objectiveUpdate');
+      }
+      // NO LONGER call socket.disconnect() here, as SocketProvider manages the global connection.
+      // The socket itself is stable across component mounts/unmounts.
+    };
+  }, [socket, sessionCode]); // Dependencies now include `socket`
+
+  // --- Objective emission (with debounce) ---
+  useEffect(() => {
+    // IMPORTANT: Ensure socket is available and connected before emitting
+    if (!socket || !socket.connected || !sessionCode) {
+      console.warn("Header: Socket not connected or sessionCode missing, cannot emit objective.");
+      return;
     }
+
+    const handler = setTimeout(() => {
+      console.log(`Header: Emitting setObjective for session ${sessionCode} with objective: ${objective}`);
+      socket.emit('setObjective', { sessionCode, objectiveText: objective });
+    }, 500); // Debounce for 500ms
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-      // No need to stop media recorder here, Subtitles component will handle its cleanup
+      clearTimeout(handler);
     };
-  }, [sessionCode]);
-
-  useEffect(() => {
-    if (socketRef.current && sessionCode) {
-      const handler = setTimeout(() => {
-        socketRef.current.emit('setObjective', { sessionCode, objectiveText: objective });
-      }, 500);
-      return () => {
-        clearTimeout(handler);
-      };
-    }
-  }, [objective, sessionCode]);
+  }, [objective, sessionCode, socket]); // Dependencies now include `socket`
 
   // --- Fullscreen Toggle ---
   function toggleFullscreen() {
@@ -91,13 +94,13 @@ export function Header({ teacherId, setteacherId, sessionCode, setSessionCode, i
           setteacherId={setteacherId}
           sessionCode={sessionCode}
           setSessionCode={setSessionCode}
+          // NO LONGER PASSING `socket` PROP HERE! GenerateStudentCode will use useSocket()
         />
 
-        {/* NEW: Integrate the Subtitles Component for Teacher */}
-        {/* Pass the socket instance, sessionCode, and specify it's the teacher view */}
-        {socketRef.current && sessionCode && (
+        {/* Integrate the Subtitles Component for Teacher */}
+        {/* NO LONGER PASSING `socket` PROP HERE! Subtitles will use useSocket() */}
+        {sessionCode && ( // Only render subtitles if sessionCode is present
             <Subtitles
-                socket={socketRef.current}
                 sessionCode={sessionCode}
                 isTeacherView={true}
             />

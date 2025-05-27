@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
 import { Login } from "./Login";
-import {socket} from "./Socket";
+import { useSocket } from './context/SocketContext'; // Import the useSocket hook
+
+// REMOVE: No longer needed here as socket is from context, and fetch doesn't use socket
+// const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
+
 export function GenerateStudentCode({ teacherId, sessionCode, setSessionCode, isAuthenticated, setIsAuthenticated, setteacherId }) {
   const [showLogin, setShowLogin] = useState(false);
+
+  // Get the socket instance from context
+  const socket = useSocket(); // <-- This is where you get the socket!
 
   const handleGenerateCode = async () => {
     try {
       const response = await fetch("https://teacher-toolkit-back-end.onrender.com/session/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Send only teacherId to the server for generating the session code
         body: JSON.stringify({ teacherId }),
       });
 
@@ -20,45 +26,51 @@ export function GenerateStudentCode({ teacherId, sessionCode, setSessionCode, is
       }
 
       const data = await response.json();
-      // Assume your backend returns the generated code under data.session.code
       setSessionCode(data.session?.code || data.sessionCode || "");
 
-      // Optionally, emit an update to inform other connected clients
-      socket.emit("updateSession", { sessionCode: data.session?.code });
+      // Emit an update to inform other connected clients (like students or other teacher views)
+      // IMPORTANT: Check if socket is available and connected before emitting
+      if (socket && socket.connected) {
+        console.log(`GenerateStudentCode: Emitting updateSession for: ${data.session?.code}`);
+        socket.emit("updateSession", { sessionCode: data.session?.code });
+      } else {
+        console.warn('GenerateStudentCode: Socket not connected, could not emit updateSession.');
+      }
+
     } catch (error) {
       console.error("Error generating session code:", error);
     }
   };
 
-  // If not authenticated, show the Login component via button click.
   const handleButtonClick = () => {
     if (!isAuthenticated) {
       setShowLogin(true);
-    } else {handleGenerateCode()}
+    } else {
+      handleGenerateCode();
+    }
   };
 
-   // Automatically poll for a new session code if authenticated.
+  // Automatically fetch for a new session code if authenticated.
   useEffect(() => {
     if (isAuthenticated) {
       // Immediately fetch the code
-      setShowLogin(false)
-      handleGenerateCode()
+      setShowLogin(false);
+      handleGenerateCode();
     }
-  }, [isAuthenticated, teacherId]);
+  }, [isAuthenticated, teacherId]); // Add handleGenerateCode to dependencies if it changes, though it's stable
 
   return (
-     <div>
+    <div>
       <button className="button" onClick={handleButtonClick} id="1">
         {!sessionCode ? 'Generate Student Code (Requires Login)' : `Student Code: ${sessionCode}`}
       </button>
-      
-      {/* When showLogin is true, render the modal overlay */}
+
       {showLogin && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <Login 
-              setIsAuthenticated={setIsAuthenticated} 
-              teacherId={teacherId} 
+            <Login
+              setIsAuthenticated={setIsAuthenticated}
+              teacherId={teacherId}
               setteacherId={setteacherId}
               closeModal={() => setShowLogin(false)}
             />
