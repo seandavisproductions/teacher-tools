@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSocket } from '../../context/SocketContext'; // Import the useSocket hook
+import { useSocket } from '.././context/SocketContext';
 
 // REMOVE: No longer needed here as socket comes from context
 // const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';

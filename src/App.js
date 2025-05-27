@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TeacherView } from './TeacherView';
 import { StudentView } from "./StudentView";
-import { SocketProvider } from './context/SocketContext'; // Import the SocketProvider
+import { useSocket } from '.././context/SocketContext';
 
 
 export default function App() {

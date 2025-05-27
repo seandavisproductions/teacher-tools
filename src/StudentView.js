@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Footer } from "./Footer";
 import { TimerClock } from "./TimerClock";
-import { useSocket } from '../../context/SocketContext'; // Import useSocket
+import { useSocket } from '.././context/SocketContext';
 
 // REMOVE: No longer needed here as socket comes from context
 // const SOCKET_SERVER_URL = "https://teacher-toolkit-back-end.onrender.com";
