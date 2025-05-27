@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Header } from './Header';
 import { CountdownTimerBoard } from './CountdownTimerBoard';
-import { ExerciseInstruction } from './ExerciseInstruction';
+import { ExerciseInstructions } from './ExerciseInstructions';
 import { Buttons } from './Buttons';
 import { Footer } from './Footer';
 import { SocketContext as GlobalSocketContext } from './context/SocketContext'; // To access the socket and its update function
@@ -43,7 +43,7 @@ export function TeacherView() {
       {/* Pass sessionCode and teacherId down to other components that need them */}
       <CountdownTimerBoard sessionCode={sessionCode} teacherId={teacherId} />
       <Buttons sessionCode={sessionCode} teacherId={teacherId} />
-      <ExerciseInstruction sessionCode={sessionCode} teacherId={teacherId} />
+      <ExerciseInstructions sessionCode={sessionCode} teacherId={teacherId} />
       <Footer sessionCode={sessionCode} teacherId={teacherId} />
     </div>
   );
