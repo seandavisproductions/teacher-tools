@@ -1,9 +1,10 @@
 // src/Header.js
 import React, { useState } from 'react';
 import { GenerateStudentCode } from "./GenerateStudentCode";
-import { Subtitles } from "./subtitles";
+import { Subtitles } from "./Subtitles";
 import { Login } from './Login';
 import { Register } from './Register';
+
 
 export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, onAuthAndSessionSuccess }) {
     const isAuthenticated = !!teacherId;
