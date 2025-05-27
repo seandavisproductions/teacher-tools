@@ -5,7 +5,7 @@ import { TimerClock } from "./TimerClock"
 // Replace with your backend URL
 const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com'; // Or your Render backend URL
 
-export const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => {
+const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => { // Keep isAuthenticated prop for backend emits
     const [timeLeft, setTimeLeft] = useState(0); // Current time left in seconds
     const [isRunning, setIsRunning] = useState(false);
     const [customTime, setCustomTime] = useState(''); // Holds custom minutes input
@@ -16,7 +16,7 @@ export const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => {
 
     // Effect for Socket.IO connection and listeners
     useEffect(() => {
-        socketRef.current = io(SOCKET_SERVER_URL); // NEW: Uses the variable
+        socketRef.current = io(SOCKET_SERVER_URL);
 
         socketRef.current.on('connect', () => {
             console.log('Connected to Socket.IO server!');
@@ -93,80 +93,70 @@ export const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => {
         }
     }, [isRunning, timeLeft]);
 
-    // --- Teacher Control Functions (only callable if isAuthenticated) ---
+    // --- Control Functions (now callable by anyone seeing the buttons) ---
+    // HOWEVER, it's CRITICAL to have backend authorization if only authenticated users should truly control.
 
     // Function to emit timer state to backend
     const emitTimerState = (running, time) => {
-        if (isAuthenticated && socketRef.current) {
+        // We still pass isAuthenticated here to the backend for backend authorization
+        // but the frontend button visibility no longer depends on it.
+        if (socketRef.current) {
             socketRef.current.emit('startTimer', {
                 sessionCode,
                 isRunning: running,
-                timeLeft: time
+                timeLeft: time,
+                // You might still want to send isAuthenticated to the backend
+                // so the backend can authorize the action
+                // isAuthenticated: isAuthenticated // This would be part of your session/JWT on backend
             });
         }
     };
 
-    // New: Toggle the timer. When starting, if no time is set yet and a custom time is provided, use it.
     const toggleStartStop = () => {
-        if (!isAuthenticated) return; // Only authenticated users can control
-
+        // The frontend button is visible, but the backend SHOULD still validate permissions.
         if (!isRunning) {
-            // On starting, if there's no preset time but a valid custom time is provided
             let timeToStart = timeLeft;
             if (timeLeft === 0 && customTime.trim() !== "") {
                 const customSeconds = parseInt(customTime, 10) * 60;
                 if (!isNaN(customSeconds) && customSeconds > 0) {
                     timeToStart = customSeconds;
-                    setTimeLeft(customSeconds); // Update local state immediately
+                    setTimeLeft(customSeconds);
                 }
             } else if (timeLeft === 0) {
-                // If no time is set and no custom time, alert or do nothing.
                 alert("Please set a time before starting the timer.");
                 return;
             }
             setIsRunning(true);
-            emitTimerState(true, timeToStart); // Emit the new state to the server
+            emitTimerState(true, timeToStart);
         } else {
-            // Stopping (Pausing)
             setIsRunning(false);
-            emitTimerState(false, timeLeft); // Emit the paused state to the server
+            emitTimerState(false, timeLeft);
         }
     };
 
-    // New: Handle change in custom time input
     const handleCustomChange = (e) => {
-        if (!isAuthenticated) return; // Only authenticated users can set custom time
-
         const val = e.target.value;
-        setCustomTime(val); // Update customTime state
+        setCustomTime(val);
 
-        // Calculate seconds from minutes for immediate display (if not running)
         const minutes = parseInt(val, 10);
         if (!isNaN(minutes) && minutes > 0) {
-            // If timer is not running, immediately reflect the change
             if (!isRunning) {
                  setTimeLeft(minutes * 60);
-                 // No need to emit here, emit only when starting/setting explicitly
             }
         } else if (!isRunning) {
-            setTimeLeft(0); // If input is cleared or invalid and not running
+            setTimeLeft(0);
         }
     };
 
-    // New: Start timer with a preset duration (e.g., 5 min, 10 min)
     const startPresetTimer = (durationSeconds) => {
-        if (!isAuthenticated) return; // Only authenticated users can start presets
-
         setTimeLeft(durationSeconds);
         setIsRunning(true);
-        setCustomTime(''); // Clear custom input if a preset is used
+        setCustomTime('');
 
-        emitTimerState(true, durationSeconds); // Emit the preset start to the server
+        emitTimerState(true, durationSeconds);
     };
 
-    // Reset function (similar to before, but renamed for clarity)
     const handleResetTimer = () => {
-        if (!isAuthenticated) return; // Only authenticated users can reset
         setTimeLeft(0);
         setIsRunning(false);
         setCustomTime('');
@@ -182,43 +172,43 @@ export const CountdownTimerBoard = ({ isAuthenticated, sessionCode }) => {
     return (
         <div className="countdown-container">
             <h3>Countdown Timer</h3>
-            {/* Conditional rendering for teacher controls */}
-            {isAuthenticated && (
-                <>
-                    <button
-                        onClick={toggleStartStop}
-                        className={!isRunning ? "teacher-button-open" : "teacher-button-close"}
-                    >
-                        {!isRunning ? "Start" : "Stop"}
-                    </button>
-                    <button onClick={handleResetTimer}>Reset</button> {/* Add reset button */}
-                </>
-            )}
+
+            {/* All controls are now always visible */}
+            <>
+                <button
+                    onClick={toggleStartStop}
+                    className={!isRunning ? "teacher-button-open" : "teacher-button-close"}
+                >
+                    {!isRunning ? "Start" : "Stop"}
+                </button>
+                <button onClick={handleResetTimer}>Reset</button>
+            </>
 
             {/* Timer display (visible to everyone) */}
             <TimerClock isRunning={isRunning} timeLeft={timeLeft}/>
 
-            {/* Buttons and Custom Input (only for authenticated users) */}
-            {isAuthenticated && (
-                <div className="buttons">
-                    <button onClick={() => startPresetTimer(5 * 60)}>5 Min</button>
-                    <button onClick={() => startPresetTimer(10 * 60)}>10 Min</button>
-                    <button onClick={() => startPresetTimer(15 * 60)}>15 Min</button>
-                    <button onClick={() => startPresetTimer(20 * 60)}>20 Min</button>
-                    <input
-                        className="input-box-1"
-                        type="number"
-                        placeholder="Custom (minutes)"
-                        value={customTime}
-                        onChange={handleCustomChange}
-                        min="0"
-                    />
-                </div>
-            )}
+            {/* Buttons and Custom Input (always visible) */}
+            <div className="buttons">
+                <button onClick={() => startPresetTimer(5 * 60)}>5 Min</button>
+                <button onClick={() => startPresetTimer(10 * 60)}>10 Min</button>
+                <button onClick={() => startPresetTimer(15 * 60)}>15 Min</button>
+                <button onClick={() => startPresetTimer(20 * 60)}>20 Min</button>
+                <input
+                    className="input-box-1"
+                    type="number"
+                    placeholder="Custom (minutes)"
+                    value={customTime}
+                    onChange={handleCustomChange}
+                    min="0"
+                />
+            </div>
 
-            {!isAuthenticated && (
+            {/* The previous message for non-authenticated users is now removed as buttons are visible */}
+            {/* {!isAuthenticated && (
                 <p>Waiting for the timer to be set and started by an authenticated user...</p>
-            )}
+            )} */}
         </div>
     );
 };
+
+export default CountdownTimerBoard;
