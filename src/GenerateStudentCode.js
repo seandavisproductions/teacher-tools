@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Login } from "./Login";
-import { useSocket } from '.././context/SocketContext';
+import { useSocket } from './context/SocketContext';
 // REMOVE: No longer needed here as socket is from context, and fetch doesn't use socket
 // const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
 

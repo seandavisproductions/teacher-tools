@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GenerateStudentCode } from "./GenerateStudentCode";
 import { Subtitles } from "./subtitles"; // Import the Subtitles component
-import { useSocket } from '../.import { useSocket } from '.././context/SocketContext';'; // Import the useSocket hook
+import { useSocket } from "./context/SocketContext";
 
 // REMOVE: No longer needed here as socket comes from context
 // const SOCKET_SERVER_URL = 'https://teacher-toolkit-back-end.onrender.com';
