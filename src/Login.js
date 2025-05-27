@@ -1,8 +1,8 @@
 // src/Login.js
 import React, { useState } from 'react';
 
-// This component receives onAuthSuccess (which is handleAuthAndSessionSuccess from TeacherView)
-export function Login({ onAuthSuccess }) {
+// This component now expects onAuthSuccess, closeModal, and onSwitchToRegister
+export function Login({ onAuthSuccess, closeModal, onSwitchToRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -53,12 +53,24 @@ export function Login({ onAuthSuccess }) {
 
   return (
     <div className="login-container">
+      {/* Only render close button if closeModal prop is provided (e.g., from a modal) */}
+      {closeModal && (
+        <button className="modal-close" onClick={closeModal}>
+          &times;
+        </button>
+      )}
       <h3>Login to Get a Session Code</h3>
       <form onSubmit={handleLogin}>
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         <button type="submit">Login</button>
       </form>
+      {/* Button to switch to the Register form - only show if onSwitchToRegister prop is provided */}
+      {onSwitchToRegister && (
+        <button className="button" onClick={onSwitchToRegister}>
+          Don't have an account? Register
+        </button>
+      )}
     </div>
   );
 }

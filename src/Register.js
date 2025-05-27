@@ -1,20 +1,13 @@
-// src/Register.js  <-- This is the correct file path and component name
+// src/Register.js
 import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom"; // Probably not needed here anymore
+import { Login } from "./Login"; // Ensure Login is imported
 
-// You don't need to import Login here if Register's internal backToLogin state
-// is simply causing it to return the <Login /> component.
-// However, if you're using this pattern, ensure Login is correctly imported.
-// For clarity, I'm assuming Register *renders* Login when backToLogin is true.
-import { Login } from "./Login";
-
-
-export function Register({ /* closeModal, setIsAuthenticated */ }) { // Remove these props if not used
+// Register now accepts onAuthAndSessionSuccess and closeModal from Header
+export function Register({ onAuthAndSessionSuccess, closeModal }) { // No onSwitchToRegister needed here, as Register's Login doesn't need to switch UP
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [backToLogin, setBackToLogin] = useState(false); // Default to showing Register form first
 
-  // This function toggles the view between Register and Login within the Register component itself
   function handleBackToLogin() {
     setBackToLogin(true); // Set to true to show Login form
   }
@@ -33,7 +26,6 @@ export function Register({ /* closeModal, setIsAuthenticated */ }) { // Remove t
       });
 
       if (!response.ok) {
-        // Parse error response if available from backend
         const errorData = await response.json();
         throw new Error(`Server error: ${response.status} - ${errorData.message || response.statusText}`);
       }
@@ -41,7 +33,7 @@ export function Register({ /* closeModal, setIsAuthenticated */ }) { // Remove t
       const data = await response.json();
       console.log("Register Response:", data);
 
-      if (data.success) { // Assuming your backend sends { success: true }
+      if (data.success) {
         alert("Registration successful! Please login.");
         setBackToLogin(true); // Switch to the Login form after successful registration
       } else {
@@ -49,35 +41,38 @@ export function Register({ /* closeModal, setIsAuthenticated */ }) { // Remove t
       }
     } catch (error) {
       console.error("Register Error:", error.message);
-      alert("Registration failed: " + error.message); // Show a user-friendly error
+      alert("Registration failed: " + error.message);
     }
   };
 
-
   return (backToLogin ?
   ( // If backToLogin is true, render the Login component
-    <Login /* setIsAuthenticated={setIsAuthenticated} closeModal={closeModal} */ /> // Pass props if Login needs them
+    <Login
+        onAuthSuccess={onAuthAndSessionSuccess} // Pass the auth success handler to Login
+        closeModal={closeModal} // Pass closeModal to Login if it needs it
+        // Note: onSwitchToRegister is NOT passed here because Login being rendered by Register
+        // doesn't need to ask Header to switch to Register (it's already Register being shown)
+    />
   ) : ( // Otherwise, render the Register form
     <div className="teacher-app">
-      {/* closeModal button might be here if this was a modal */}
-      {/* {closeModal && (
+      {closeModal && ( // Only render close button if closeModal is provided
         <button className="modal-close" onClick={closeModal}>
           &times;
         </button>
-      )} */}
+      )}
       <h1>Register Your Username and Password</h1>
       <input
         className="input-text"
         type="text"
         placeholder="Username"
-        value={username} // Controlled component
+        value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
       <input
         className="input-text"
         type="password"
         placeholder="Password"
-        value={password} // Controlled component
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
