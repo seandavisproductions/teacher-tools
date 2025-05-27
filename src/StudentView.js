@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { Footer } from "./Footer";
-import { TimerClock } from "./TimerClock";
+import { TimerClock } from "./TimerClock"; // Assuming you have this
+// import { ObjectiveBox } from './ObjectiveBox'; // If you create a separate component for it
 
 // Define the Socket.IO server URL outside the component
 const SOCKET_SERVER_URL = "https://teacher-toolkit-back-end.onrender.com";
@@ -9,17 +10,21 @@ const SOCKET_SERVER_URL = "https://teacher-toolkit-back-end.onrender.com";
 export const StudentView = ({ sessionCode: propSessionCode }) => {
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0); // Local time for the timer
-  const [isRunning, setIsRunning] = useState(false); // New state to track if the timer is running
-  const [currentSessionCode, setCurrentSessionCode] = useState(propSessionCode); // State to hold the session code
+  const [currentSessionCode, setCurrentSessionCode] = useState(propSessionCode);
 
-  const socketRef = useRef(null); // Use useRef to hold the socket instance
-  const timerIntervalRef = useRef(null); // Ref to hold the local countdown interval ID
-  const lastServerSyncTimeRef = useRef(Date.now()); // To track when the last timerUpdate was received
+  // Timer states
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  // Objective state
+  const [objectiveText, setObjectiveText] = useState(""); // <-- NEW: State for objective
+
+  const socketRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const lastServerSyncTimeRef = useRef(Date.now());
 
   // Effect to initialize socket connection once
   useEffect(() => {
-    // Initialize socket only if it doesn't already exist
     if (!socketRef.current) {
       socketRef.current = io(SOCKET_SERVER_URL, {
         withCredentials: true,
@@ -27,44 +32,37 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
 
       socketRef.current.on("connect", () => {
         console.log("Student socket connected!");
-        // If we already have a sessionCode (e.g., passed as prop on initial load)
         if (currentSessionCode) {
           socketRef.current.emit("joinSession", currentSessionCode);
-          console.log("Attempted to join session:", currentSessionCode);
         }
       });
 
-      // Listen for timer updates from the server.
       socketRef.current.on("timerUpdate", (data) => {
         console.log("Received timer update:", data);
         const { isRunning: serverIsRunning, timeLeft: serverTimeLeft } = data;
 
-        setIsRunning(serverIsRunning); // Update local isRunning state
-        setTimeLeft(serverTimeLeft); // Update local timeLeft state
-        lastServerSyncTimeRef.current = Date.now(); // Mark time of sync
+        setIsRunning(serverIsRunning);
+        setTimeLeft(serverTimeLeft);
+        lastServerSyncTimeRef.current = Date.now();
 
-        // If the server says the timer is running, start/reset local countdown interval
         if (serverIsRunning) {
-          // Clear any existing interval to prevent duplicates or stale timers
           if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
           }
-          // Start a new interval to count down locally
           timerIntervalRef.current = setInterval(() => {
             const elapsedTimeSinceLastSync = Math.floor((Date.now() - lastServerSyncTimeRef.current) / 1000);
             const newTimeLeft = serverTimeLeft - elapsedTimeSinceLastSync;
 
             if (newTimeLeft <= 0) {
               setTimeLeft(0);
-              setIsRunning(false); // Timer has finished
+              setIsRunning(false);
               clearInterval(timerIntervalRef.current);
               timerIntervalRef.current = null;
             } else {
               setTimeLeft(newTimeLeft);
             }
-          }, 1000); // Update every second
+          }, 1000);
         } else {
-          // If server says it's paused or stopped, ensure our local timer also stops
           if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
@@ -72,23 +70,28 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
         }
       });
 
-      // Listen for timer reset from the server
       socketRef.current.on("timerReset", (data) => {
         console.log("Received timer reset:", data);
         setTimeLeft(0);
-        setIsRunning(false); // Set isRunning to false on reset
+        setIsRunning(false);
         if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
         }
+      });
+
+      // <-- NEW: Listen for objective updates from the server
+      socketRef.current.on("objectiveUpdate", (objective) => {
+        console.log("Received objective update:", objective);
+        setObjectiveText(objective);
       });
 
       socketRef.current.on("disconnect", () => {
         console.log("Student socket disconnected!");
-        setIsRunning(false); // Stop local timer on disconnect
+        setIsRunning(false);
         if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
         }
       });
 
@@ -97,7 +100,6 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
       });
     }
 
-    // Cleanup function: Disconnect socket and clear interval when component unmounts
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
@@ -108,7 +110,7 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
         timerIntervalRef.current = null;
       }
     };
-  }, []); // Empty dependency array: runs only once on mount
+  }, []);
 
   // Effect to join session room when currentSessionCode changes or socket connects
   useEffect(() => {
@@ -131,7 +133,7 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
 
       if (response.ok && data.success) {
         setIsAuthorized(true);
-        setCurrentSessionCode(inputCode.trim()); // Update session code state
+        setCurrentSessionCode(inputCode.trim());
       } else {
         alert(data.error || "Invalid code. Please try again.");
       }
@@ -140,6 +142,15 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
       alert("Error validating session code. Please try again.");
     }
   };
+
+  // Fullscreen function for student view
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
 
   return (
     <div>
@@ -155,11 +166,25 @@ export const StudentView = ({ sessionCode: propSessionCode }) => {
         </div>
       ) : (
         <div className="student-app">
-          <h2>Welcome to the Student View!</h2>
-          <img className="styled-image" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
+          {/* NEW: Student Header */}
+          <div className="header"> {/* Use the same class as teacher's header for styling */}
+            <button onClick={toggleFullscreen} className="button-fullscreen">
+              <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Fullscreen" />
+            </button>
+            <img className="styled-image logo" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
+            {/* Display the objective text received from the teacher */}
+            <div className="objective-display">
+                <p>Objective: {objectiveText || "Waiting for teacher to set objective..."}</p>
+            </div>
+            {/* NEW: TimerClock directly in the header area if you want it prominent */}
+            <TimerClock timeLeft={timeLeft} isRunning={isRunning} />
+          </div>
+
+          {/* Other student view content can go here if needed */}
+          <p>Welcome to the Student View for session: **{currentSessionCode}**</p> {/* Display session code */}
+
+
           <Footer />
-          {/* Pass isRunning and timeLeft to TimerClock */}
-          <TimerClock timeLeft={timeLeft} isRunning={isRunning} />
         </div>
       )}
     </div>
