@@ -46,11 +46,14 @@ function App() {
   };
 
   // CORRECTED: Use an environment variable for Google Client ID
+  // Make sure REACT_APP_GOOGLE_CLIENT_ID is set in your .env file
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Router>
+      {/* ADD THE 'basename' PROP HERE */}
+      {/* This tells React Router that your app is hosted under the /teacher-tools/ subdirectory */}
+      <Router basename="/teacher-tools">
         <Routes>
           <Route
             path="/reset-password"
@@ -63,12 +66,11 @@ function App() {
           />
 
           <Route
-            path="/"
+            path="/" // This path will now correctly map to /teacher-tools/
             element={
               userRole === null ? (
                 <RoleSelection onSelectRole={handleRoleSelect} />
               ) : userRole === 'teacher' ? (
-                // CORRECTED: Use the correct component name 'SocketProvider'
                 <SocketProvider>
                   <TeacherView
                     onResetRole={handleResetRole}
@@ -76,7 +78,6 @@ function App() {
                   />
                 </SocketProvider>
               ) : userRole === 'student' ? (
-                // CORRECTED: Use the correct component name 'SocketProvider'
                 <SocketProvider>
                   <StudentView
                     onResetRole={handleResetRole}
@@ -89,6 +90,8 @@ function App() {
             }
           />
 
+          {/* This catch-all will now navigate to /teacher-tools/ if other paths don't match */}
+          {/* It's still good practice to have this, but with basename, it should work correctly */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
@@ -96,5 +99,4 @@ function App() {
   );
 }
 
-// code
 export default App;
