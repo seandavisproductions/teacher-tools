@@ -1,29 +1,59 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { SocketProvider } from './context/SocketContext';
 import { TeacherView } from './TeacherView';
-import { StudentView } from './StudentView';
-import { SocketProvider } from './context/SocketContext'; // Essential for stable socket
+import { StudentView } from './StudentView'; // Assuming StudentView exists
+import { RoleSelection } from './RoleSelection';
 
 function App() {
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      setUserRole(storedRole);
+    }
+  }, []);
+
+  const handleRoleSelect = (role) => {
+    setUserRole(role);
+    localStorage.setItem('userRole', role);
+  };
+
+  // NEW FUNCTION: Handles resetting the user's role
+  const handleResetRole = () => {
+    setUserRole(null); // Set role to null to show RoleSelection
+    localStorage.removeItem('userRole'); // Clear from local storage
+    // Optionally, you might want to clear other session data if switching roles implies a full logout.
+    // E.g., localStorage.removeItem('token'); localStorage.removeItem('sessionCode');
+  };
+
+  let content;
+  if (userRole === null) {
+    content = <RoleSelection onSelectRole={handleRoleSelect} />;
+  } else if (userRole === 'teacher') {
+    content = (
+      <SocketProvider>
+        {/* Pass the new handleResetRole function to TeacherView */}
+        <TeacherView onResetRole={handleResetRole} />
+      </SocketProvider>
+    );
+  } else if (userRole === 'student') {
+    content = (
+      <SocketProvider>
+        {/* Pass the new handleResetRole function to StudentView */}
+        <StudentView onResetRole={handleResetRole} />
+      </SocketProvider>
+    );
+  } else {
+    content = <p>Error: Invalid role selected.</p>;
+  }
+
   return (
-    <SocketProvider> {/* This wraps the entire app to keep the socket stable */}
-      <Router>
-        <div className="App">
-          <Routes>
-            {/* Anyone can access TeacherView directly via / or /teacher */}
-            <Route path="/" element={<TeacherView />} />
-            <Route path="/teacher" element={<TeacherView />} />
-
-            {/* Student View (requires a sessionCode in the URL) */}
-            <Route path="/student/:sessionCodeFromUrl?" element={<StudentView />} />
-
-            {/* Fallback for any unknown paths */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
-      </Router>
-    </SocketProvider>
+    <Router>
+      {content}
+    </Router>
   );
 }
 

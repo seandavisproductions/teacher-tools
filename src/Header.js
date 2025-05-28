@@ -6,7 +6,7 @@ import { Login } from './Login';      // Make sure Login is imported
 import { Register } from './Register'; // Make sure Register is imported
 
 
-export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, onAuthAndSessionSuccess }) {
+export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, onAuthAndSessionSuccess, onResetRole }) {
     const isAuthenticated = !!teacherId;
     // State to toggle between Login and Register forms within the auth section
     const [showRegisterForm, setShowRegisterForm] = useState(false);
@@ -83,7 +83,7 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                             />
                         ) : (
                             <Login
-                                onAuthSuccess={handleAuthSuccessAndHideForm}
+                                onAuthSuccess={handleAuthAndSessionSuccess}
                                 closeModal={handleCloseAuthForms} // 'x' button in Login hides the whole section
                                 onSwitchToRegister={handleSwitchToRegister} // This is the prop Login needs
                             />
@@ -101,7 +101,16 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                                 setSessionCode={setSessionCode}
                             />
                         )}
+                        {/* The "Change Role" button is now moved outside this block */}
                     </div>
+                )}
+
+                {/* NEW LOCATION: Place the Change Role button here, outside the isAuthenticated block.
+                    It will always be visible as long as onResetRole is provided (from TeacherView). */}
+                {onResetRole && (
+                    <button onClick={onResetRole} className="button change-role-button">
+                        Change Role
+                    </button>
                 )}
             </div>
 

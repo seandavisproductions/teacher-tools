@@ -1,7 +1,7 @@
-import { Button } from "./Button";
+// src/Tools.js
+import { Button } from "./ToolButton"; // Make sure this path is correct for ToolButton
 
-export function Buttons({ curOpen, setIsOpen, setCurOpen }) {
-
+export function Tools({ curOpen, setIsOpen, setCurOpen, onToolSelect }) {
 
   const tools = [
   { id: 'exercise-instructions', title: 'Exercise Instructions' },
@@ -13,18 +13,19 @@ export function Buttons({ curOpen, setIsOpen, setCurOpen }) {
   { id: 'group-maker', title: 'Group Maker' },
   { id: 'timer', title: 'Timer' },
   { id: 'whiteboard', title: 'Whiteboard' },
-  { id: 'feedback-collector', title: 'Feedback Collector' },
 ];
   return (
     <div className="tool-buttons-container">
       {tools.map((el, i) => (
         <Button
           title={el.title}
-          key={i}
+          key={el.id}
           number={i + 1}
           curOpen={curOpen}
           setIsOpen={setIsOpen}
           setCurOpen={setCurOpen}
+          onToolSelect={onToolSelect}
+          toolId={el.id}
         ></Button>
       ))}
     </div>
