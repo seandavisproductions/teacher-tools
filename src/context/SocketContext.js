@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 // 1. CREATE THE CONTEXT OBJECT
 const SocketContext = createContext(null); // This is the object you're trying to import as GlobalSocketContext
 
-const SOCKET_SERVER_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+const SOCKET_SERVER_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
