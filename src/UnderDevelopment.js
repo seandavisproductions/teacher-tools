@@ -29,7 +29,7 @@ export function UnderDevelopment() {
         width="15%"
         height="15%"
         alt="baby running in the corridoor"
-        fetchpriority="high"
+        fetchPriority="high"
         style={{ display: "block", margin: "auto" }}
       ></img>
       <h2 align="center">{randomItem.text}</h2>
