@@ -1,6 +1,5 @@
-// src/Header.js
 import React, { useState } from 'react';
-import { GenerateStudentCode } from "./GenerateStudentCode";
+// import { GenerateStudentCode } from "./GenerateStudentCode"; // REMOVED: This component is no longer directly used here for session code generation/display
 import { Subtitles } from "./Subtitles";
 import { Login } from './Login';
 import { Register } from './Register';
@@ -40,7 +39,7 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
         setShowRegisterForm(true);
     };
 
-    // --- NEW: This function is passed to Register.js as 'onSwitchToLogin'. ---
+    // This function is passed to Register.js as 'onSwitchToLogin'.
     // It tells Header to show the Login form.
     const handleSwitchToLogin = () => {
         setShowRegisterForm(false); // Switch back to the login view
@@ -52,6 +51,51 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
         onAuthAndSessionSuccess(code, id); // Propagate success details up to TeacherView
         setShowAuthSection(false); // Hide the auth section after successful login
         setShowRegisterForm(false); // Reset to login view for next time
+    };
+
+    // --- NEW FUNCTION: To handle generating/refreshing session code ---
+    const handleRefreshSessionCode = async () => {
+        if (!teacherId) {
+            console.warn('Cannot refresh session code: Teacher not logged in.');
+            return;
+        }
+
+        const token = localStorage.getItem('token'); // Assuming JWT token is stored in localStorage
+
+        if (!token) {
+            console.error('No authentication token found. Please log in.');
+            alert('You must be logged in to generate a new session code.'); // Provide user feedback
+            return;
+        }
+
+        try {
+            // Make API call to your backend endpoint for generating a new code
+            // IMPORTANT: Ensure this URL matches your Render backend URL + the new route path
+            // Example: 'https://your-backend-service.onrender.com/auth/generate-new-session-code'
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/generate-new-session-code`, {
+                method: 'POST', // Use POST as you are changing state on the server
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Send the JWT token
+                },
+                // No body needed for this request if teacherId comes from token
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log('New session code received:', data.sessionCode);
+                setSessionCode(data.sessionCode); // Update the session code in state
+                // Optional: Provide visual feedback to the user
+                // alert(`Your new session code is: ${data.sessionCode}`); 
+            } else {
+                console.error('Failed to generate new session code:', data.message || 'Server error');
+                alert('Failed to generate new session code: ' + (data.message || 'Please try again.'));
+            }
+        } catch (error) {
+            console.error('Error refreshing session code:', error);
+            alert('Error refreshing session code. Please check your network or try again.');
+        }
     };
 
     return (
@@ -76,6 +120,7 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
 
                 {/* Authentication/Session Management Area */}
                 {!isAuthenticated ? (
+                    // Display Login/Register buttons or forms when not authenticated
                     !showAuthSection ? (
                         <button className="button"onClick={() => setShowAuthSection(true)}>
                             Login / Register
@@ -83,7 +128,7 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                     ) : (
                         showRegisterForm ? (
                             <Register
-                                closeModal={handleCloseAuthForms} // Use consistent close handler
+                                closeModal={handleCloseAuthForms} 
                                 onAuthAndSessionSuccess={handleAuthSuccessAndHideForm}
                                 onSwitchToLogin={handleSwitchToLogin} 
                             />
@@ -96,16 +141,22 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                         )
                     )
                 ) : (
-                    <div>
-                        <p>Logged in as: {teacherId}</p>
-                        {sessionCode ? (
-                            <p>Your Session Code: <strong>{sessionCode}</strong></p>
-                        ) : (
-                            <GenerateStudentCode
-                                teacherId={teacherId}
-                                setSessionCode={setSessionCode}
-                            />
-                        )}
+                    // --- MODIFIED AUTHENTICATED SECTION ---
+                    <div className="authenticated-actions">
+                        {/* REMOVED: The line <p>Logged in as: {teacherId}</p> is removed */}
+                        
+                        {/* Session Code Display Button */}
+                        <button 
+                            className="button session-code-button" 
+                            onClick={handleRefreshSessionCode}
+                        >
+                            Session Code: <strong>{sessionCode || 'Generating...'}</strong> (Click to Refresh)
+                        </button>
+                        
+                        {/* The GenerateStudentCode component is no longer used here as the new button
+                            handles both display and refresh. */}
+
+                        {/* Example of where to put other teacher-specific authenticated content if needed */}
                     </div>
                 )}
 
