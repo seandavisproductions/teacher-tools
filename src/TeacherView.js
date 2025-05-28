@@ -50,6 +50,7 @@ export function TeacherView({ onResetRole }) {
         setTeacherId={setTeacherId}
         onAuthAndSessionSuccess={handleAuthAndSessionSuccess}
         onResetRole={onResetRole}
+        
       />
 
       <CountdownTimerBoard sessionCode={sessionCode} teacherId={teacherId} />

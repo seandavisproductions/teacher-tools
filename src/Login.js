@@ -1,76 +1,133 @@
 // src/Login.js
 import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 
-// This component now expects onAuthSuccess, closeModal, and onSwitchToRegister
+const BACKEND_URL = "https://teacher-toolkit-back-end.onrender.com";
+
 export function Login({ onAuthSuccess, closeModal, onSwitchToRegister }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     try {
-      // 1. Authenticate the user
-      const loginResponse = await fetch('https://teacher-toolkit-back-end.onrender.com/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
-      const loginData = await loginResponse.json();
-      console.log('Login Response:', loginData);
 
-      if (loginData.token) {
-        localStorage.setItem('token', loginData.token); // Store token for future authenticated calls
+      const data = await response.json();
 
-        // 2. Generate a session code after successful login
-        const sessionResponse = await fetch('https://teacher-toolkit-back-end.onrender.com/session/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${loginData.token}` // Use the obtained token
-            },
-            body: JSON.stringify({ teacherId: loginData.teacherId }) // Pass the teacherId from login response
-        });
-        const sessionData = await sessionResponse.json();
-        console.log('Session Generation Response:', sessionData);
-
-        if (sessionData.sessionCode) {
-            // Call the success handler: this will update TeacherView's state
-            // and trigger SocketContext to join the session.
-            onAuthSuccess(sessionData.sessionCode, loginData.teacherId);
-        } else {
-            console.error('Failed to generate session code:', sessionData.message);
-            alert('Failed to generate session code: ' + sessionData.message);
-        }
+      if (response.ok && data.token && data.userId && data.sessionCode) {
+        localStorage.setItem('token', data.token);
+        onAuthSuccess(data.sessionCode, data.userId);
       } else {
-        console.error('Login failed:', loginData.message);
-        alert('Login failed: ' + loginData.message);
+        if (data.message === "Email not verified") {
+            setError("Your email is not verified. Please check your inbox or click 'Resend Verification Email'.");
+        } else {
+            setError(data.message || 'Login failed. Please check your credentials.');
+        }
       }
-    } catch (error) {
-      console.error('Network or API error during login/session generation:', error);
-      alert('An error occurred. Please check network and server.');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } // <--- THIS IS THE FIX: Changed '.' to '}'
+  };
+
+  // --- Google Sign-In Success Handler ---
+  const handleGoogleSuccess = async (credentialResponse) => {
+    console.log("Google login successful:", credentialResponse);
+    const idToken = credentialResponse.credential;
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/google-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token && data.userId && data.sessionCode) {
+        localStorage.setItem('token', data.token);
+        onAuthSuccess(data.sessionCode, data.userId);
+      } else {
+        setError(data.message || 'Google login failed on server. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error sending Google ID token to backend:', err);
+      setError('An error occurred during Google sign-in. Please try again.');
     }
   };
 
+  // --- Google Sign-In Error Handler ---
+  const handleGoogleError = () => {
+    console.error("Google login failed. Check console for details.");
+    setError("Google login failed. Please try again or use email/password.");
+  };
+
+  // --- Forgot Password Handler ---
+  const handleForgotPassword = () => {
+      alert("Forgot Password functionality needs backend integration. You would send an email here.");
+      console.log("Forgot Password clicked. Implement modal/page to ask for email.");
+  };
+
   return (
-    <div className="login-container">
-      {/* Only render close button if closeModal prop is provided (e.g., from a modal) */}
-      {closeModal && (
-        <button className="modal-close" onClick={closeModal}>
-          &times;
-        </button>
-      )}
-      <h3>Login to Get a Session Code</h3>
-      <form onSubmit={handleLogin}>
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">Login</button>
-      </form>
-      {/* Button to switch to the Register form - only show if onSwitchToRegister prop is provided */}
-      {onSwitchToRegister && (
-        <button className="button" onClick={onSwitchToRegister}>
-          Don't have an account? Register
-        </button>
-      )}
+    <div className="modal-overlay">
+      <button className="modal-close" onClick={closeModal}>X</button>
+      <div className="modal-content">
+        <h3>Login</h3>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button className="button"type="submit">Login</button>
+          {error && <p className="error-message">{error}</p>}
+        </form>
+
+        <p className="">
+          <a href="#" onClick={handleForgotPassword}>Forgot Password?</a>
+        </p>
+
+        <div className="auth-separator">OR</div>
+
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          render={renderProps => (
+            <button
+              onClick={renderProps.onClick}
+              disabled={renderProps.disabled}
+              className="button google-sign-in-button"
+            >
+              Sign in with Google
+            </button>
+          )}
+        />
+
+        <p className="register-link-container">
+          Don't have an account? <button type="button" onClick={onSwitchToRegister}>Register</button>
+        </p>
+      </div>
     </div>
   );
 }

@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { GenerateStudentCode } from "./GenerateStudentCode";
 import { Subtitles } from "./Subtitles";
-import { Login } from './Login';      // Make sure Login is imported
-import { Register } from './Register'; // Make sure Register is imported
+import { Login } from './Login';
+import { Register } from './Register';
 
 
 export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, onAuthAndSessionSuccess, onResetRole }) {
@@ -40,6 +40,12 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
         setShowRegisterForm(true);
     };
 
+    // --- NEW: This function is passed to Register.js as 'onSwitchToLogin'. ---
+    // It tells Header to show the Login form.
+    const handleSwitchToLogin = () => {
+        setShowRegisterForm(false); // Switch back to the login view
+    };
+
     // This function wraps onAuthAndSessionSuccess. It is called by Login/Register
     // after a successful login/registration.
     const handleAuthSuccessAndHideForm = (code, id) => {
@@ -49,7 +55,7 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
     };
 
     return (
-        <div> {/* This outer div was explicitly requested by you */}
+        <div>
             <div className="header">
                 {/* Fullscreen button */}
                 <button onClick={toggleFullscreen} className="button-fullscreen">
@@ -64,33 +70,32 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                     className="input-text"
                     type="text"
                     placeholder="Objective: To understand how to use Teacher Toolkit"
-                    value={objective} // Controlled component
+                    value={objective}
                     onChange={(e) => setObjective(e.target.value)}
                 ></input>
 
-                {/* Authentication/Session Management Area - This is where the Login/Register logic is */}
-                {!isAuthenticated ? ( // If the user is NOT authenticated
-                    // If the auth section is currently hidden, show the "Login/Register" button
+                {/* Authentication/Session Management Area */}
+                {!isAuthenticated ? (
                     !showAuthSection ? (
                         <button className="button"onClick={() => setShowAuthSection(true)}>
                             Login / Register
                         </button>
-                    ) : ( // Else (auth section is visible), show either Login or Register form
+                    ) : (
                         showRegisterForm ? (
                             <Register
-                                closeModal={() => setShowRegisterForm(false)} // Allows Register to switch back to Login view
+                                closeModal={handleCloseAuthForms} // Use consistent close handler
                                 onAuthAndSessionSuccess={handleAuthSuccessAndHideForm}
+                                onSwitchToLogin={handleSwitchToLogin} 
                             />
                         ) : (
-                            <Login
-                                onAuthSuccess={handleAuthAndSessionSuccess}
-                                closeModal={handleCloseAuthForms} // 'x' button in Login hides the whole section
-                                onSwitchToRegister={handleSwitchToRegister} // This is the prop Login needs
+                           <Login
+                                onAuthSuccess={handleAuthSuccessAndHideForm}
+                                closeModal={handleCloseAuthForms}
+                                onSwitchToRegister={handleSwitchToRegister}
                             />
                         )
                     )
-                ) : ( // If the user IS authenticated
-                    // Show session details and controls, or GenerateStudentCode
+                ) : (
                     <div>
                         <p>Logged in as: {teacherId}</p>
                         {sessionCode ? (
@@ -101,12 +106,9 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                                 setSessionCode={setSessionCode}
                             />
                         )}
-                        {/* The "Change Role" button is now moved outside this block */}
                     </div>
                 )}
 
-                {/* NEW LOCATION: Place the Change Role button here, outside the isAuthenticated block.
-                    It will always be visible as long as onResetRole is provided (from TeacherView). */}
                 {onResetRole && (
                     <button onClick={onResetRole} className="button change-role-button">
                         Change Role
@@ -114,7 +116,6 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
                 )}
             </div>
 
-            {/* Subtitles component - conditionally rendered if sessionCode exists */}
             {sessionCode && (
                 <Subtitles
                     sessionCode={sessionCode}

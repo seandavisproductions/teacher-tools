@@ -1,83 +1,153 @@
 // src/Register.js
-import React, { useState } from "react";
-import { Login } from "./Login"; // Ensure Login is imported
+import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 
-// Register now accepts onAuthAndSessionSuccess and closeModal from Header
-export function Register({ onAuthAndSessionSuccess, closeModal }) { // No onSwitchToRegister needed here, as Register's Login doesn't need to switch UP
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [backToLogin, setBackToLogin] = useState(false); // Default to showing Register form first
+const BACKEND_URL = "https://teacher-toolkit-back-end.onrender.com";
 
-  function handleBackToLogin() {
-    setBackToLogin(true); // Set to true to show Login form
-  }
+export function Register({ onAuthAndSessionSuccess, closeModal, onSwitchToLogin }) { // <-- ADD onSwitchToLogin prop
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
 
-  const handleRegister = async () => {
-    if (password.length < 8) {
-      alert("Password must be at least 8 characters long.");
-      return;
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
 
     try {
-      const response = await fetch("https://teacher-toolkit-back-end.onrender.com/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+      const response = await fetch(`${BACKEND_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Server error: ${response.status} - ${errorData.message || response.statusText}`);
-      }
-
       const data = await response.json();
-      console.log("Register Response:", data);
 
-      if (data.success) {
-        alert("Registration successful! Please login.");
-        setBackToLogin(true); // Switch to the Login form after successful registration
+      if (response.ok && data.success) {
+        setMessage(data.message || 'Registration successful! Please check your email to verify your account.');
+        // If your backend automatically logs in/creates a session after verification,
+        // you would call onAuthAndSessionSuccess here. For now, assuming email verification.
       } else {
-        alert("Registration failed! " + (data.error || "Unknown error"));
+        setError(data.message || 'Registration failed.');
       }
-    } catch (error) {
-      console.error("Register Error:", error.message);
-      alert("Registration failed: " + error.message);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
-  return (backToLogin ?
-  ( // If backToLogin is true, render the Login component
-    <Login
-        onAuthSuccess={onAuthAndSessionSuccess} // Pass the auth success handler to Login
-        closeModal={closeModal} // Pass closeModal to Login if it needs it
-        // Note: onSwitchToRegister is NOT passed here because Login being rendered by Register
-        // doesn't need to ask Header to switch to Register (it's already Register being shown)
-    />
-  ) : ( // Otherwise, render the Register form
-    <div className="teacher-app">
-      {closeModal && ( // Only render close button if closeModal is provided
-        <button className="modal-close" onClick={closeModal}>
-          &times;
-        </button>
-      )}
-      <h1>Register Your Username and Password</h1>
-      <input
-        className="input-text"
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        className="input-text"
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+  const handleResendVerification = async () => {
+      setMessage(null);
+      setError(null);
+      if (!email) {
+          setError("Please enter your email to resend the verification link.");
+          return;
+      }
+      try {
+          const response = await fetch(`${BACKEND_URL}/auth/resend-verification`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+          });
+          const data = await response.json();
+          if (response.ok && data.success) {
+              setMessage(data.message || 'Verification email sent! Please check your inbox.');
+          } else {
+              setError(data.message || 'Failed to resend verification email. ' + (data.message || ''));
+          }
+      } catch (err) {
+          console.error('Resend verification error:', err);
+          setError('Error sending verification email. Please try again later.');
+      }
+  };
 
-      <button className="button" onClick={handleRegister}>Submit</button>
-      <button className="button" onClick={handleBackToLogin}>Back to login</button>
-    </div>)
+  const handleGoogleSuccess = async (credentialResponse) => {
+    console.log("Google sign-up/login successful:", credentialResponse);
+    const idToken = credentialResponse.credential;
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/google-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token && data.userId && data.sessionCode) {
+        localStorage.setItem('token', data.token);
+        onAuthAndSessionSuccess(data.sessionCode, data.userId);
+      } else {
+        setError(data.message || 'Google sign-up failed on server. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error sending Google ID token to backend for sign-up:', err);
+      setError('An error occurred during Google sign-up. Please try again.');
+    }
+  };
+
+  const handleGoogleError = () => {
+    console.error("Google sign-up failed. Check console for details.");
+    setError("Google sign-up failed. Please try again.");
+  };
+
+  return (
+    <div className="modal-overlay">
+      <button className="modal-close" onClick={closeModal}>X</button>
+      <div className="modal-content">
+        <h3>Register</h3>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Register</button>
+          {error && <p className="error-message">{error}</p>}
+          {message && <p className="success-message">{message}</p>}
+        </form>
+
+        {/* Resend Verification Email Link */}
+        <p className="resend-verification-link">
+          <a href="#" onClick={handleResendVerification}>Resend Verification Email</a>
+        </p>
+
+        <div className="auth-separator">OR</div>
+
+        {/* Google Sign-Up Button with custom class */}
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          render={renderProps => (
+            <button
+              onClick={renderProps.onClick}
+              disabled={renderProps.disabled}
+              className="button google-sign-in-button" // Your specified class
+            >
+              Sign up with Google
+            </button>
+          )}
+        />
+
+        {/* Already have an account? Login link */}
+        <p className="login-link-container"> {/* New class for potential styling */}
+          Already have an account? <button type="button" onClick={onSwitchToLogin}>Login</button> {/* NEW onSwitchToLogin prop */}
+        </p>
+      </div>
+    </div>
   );
 }
