@@ -1,9 +1,12 @@
 // src/CountdownTimerBoard.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react'; // ADDED useContext
 import { TimerClock } from "./TimerClock";
-// REMOVED: import { useSocket } from './context/SocketContext'; // No longer needed for standalone timer
+import { SocketContext } from './context/SocketContext'; // RE-ADDED this import!
 
-export const CountdownTimerBoard = () => { // sessionCode prop removed
+export const CountdownTimerBoard = () => {
+    // Get socket and sessionCode from context
+    const { socket, sessionCode } = useContext(SocketContext); // ADDED this line!
+
     const [timeLeft, setTimeLeft] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [customTime, setCustomTime] = useState('');
@@ -11,6 +14,10 @@ export const CountdownTimerBoard = () => { // sessionCode prop removed
     const timerIntervalRef = useRef(null); // Ref to hold the interval ID for local countdown
 
     // This useEffect now manages only the local countdown interval
+    // IMPORTANT: For true server-client sync, you might want to adjust this to ALSO
+    // listen for 'timerUpdate' events from the server on the teacher side too,
+    // so the teacher's timer is always exactly what the server says.
+    // For now, this local tick provides immediate visual feedback.
     useEffect(() => {
         if (isRunning && timeLeft > 0) {
             timerIntervalRef.current = setInterval(() => {
@@ -26,23 +33,27 @@ export const CountdownTimerBoard = () => { // sessionCode prop removed
                 });
             }, 1000);
         } else if (!isRunning && timerIntervalRef.current) {
-            // Clear interval if timer is stopped but interval is still active
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
         }
 
-        // Cleanup: Clear interval when component unmounts or isRunning/timeLeft state changes
         return () => {
             if (timerIntervalRef.current) {
                 clearInterval(timerIntervalRef.current);
             }
         };
-    }, [isRunning, timeLeft]); // Dependencies are now purely local state
+    }, [isRunning, timeLeft]);
 
-    // Local Timer Control Functions (no server communication)
+
+    // Modified: Now communicates with the server
     const toggleStartStop = () => {
+        if (!socket || !sessionCode) {
+            console.warn("Socket or session code not available. Cannot send timer command to server.");
+            return;
+        }
+
+        let timeToStart = timeLeft;
         if (!isRunning) { // If currently stopped, try to start
-            let timeToStart = timeLeft;
             if (timeLeft === 0 && customTime.trim() !== "") {
                 const customSeconds = parseInt(customTime, 10) * 60;
                 if (!isNaN(customSeconds) && customSeconds > 0) {
@@ -53,14 +64,27 @@ export const CountdownTimerBoard = () => { // sessionCode prop removed
                 return;
             }
 
-            // Start local timer
+            // Emit 'startTimer' to backend to START the timer
+            socket.emit('startTimer', {
+                sessionCode: sessionCode, // Pass the correct session code
+                isRunning: true, // Indicate the desire to start
+                timeLeft: timeToStart // Pass the time to start from
+            });
+
+            // Update local state immediately for responsiveness
             setIsRunning(true);
-            setTimeLeft(timeToStart); // Set to the initial time or current time
-            // The useEffect above will pick up `isRunning` and start the interval
+            setTimeLeft(timeToStart);
+
         } else { // If currently running, try to stop
-            // Stop local timer
+            // Emit 'startTimer' to backend to STOP the timer (backend's 'startTimer' handles both)
+            socket.emit('startTimer', {
+                sessionCode: sessionCode,
+                isRunning: false, // Indicate the desire to stop
+                timeLeft: timeLeft // Current time left for backend to pause at
+            });
+
+            // Update local state immediately for responsiveness
             setIsRunning(false);
-            // The useEffect above will pick up `!isRunning` and clear the interval
         }
     };
 
@@ -70,7 +94,7 @@ export const CountdownTimerBoard = () => { // sessionCode prop removed
 
         const minutes = parseInt(val, 10);
         if (!isNaN(minutes) && minutes > 0) {
-            if (!isRunning) { // Only set time if not running to avoid interrupting
+            if (!isRunning) {
                  setTimeLeft(minutes * 60);
             }
         } else if (!isRunning) {
@@ -87,19 +111,36 @@ export const CountdownTimerBoard = () => { // sessionCode prop removed
 
         setTimeLeft(durationSeconds);
         setIsRunning(true);
-        setCustomTime(''); // Clear custom input when using preset
-        // The useEffect above will pick up `isRunning` and start the interval
+        setCustomTime('');
+
+        // Emit to backend to START the timer with this preset
+        if (socket && sessionCode) {
+            socket.emit('startTimer', {
+                sessionCode: sessionCode,
+                isRunning: true,
+                timeLeft: durationSeconds
+            });
+        }
     };
 
+    // Modified: Now communicates with the server
     const handleResetTimer = () => {
-        // Stop local timer
+        if (!socket || !sessionCode) {
+            console.warn("Socket or session code not available. Cannot send timer reset to server.");
+            return;
+        }
+
+        // Emit 'resetTimer' to backend
+        socket.emit('resetTimer', sessionCode); // Send only the sessionCode
+
+        // Update local state immediately for responsiveness
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
         }
         setTimeLeft(0);
         setIsRunning(false);
-        setCustomTime(''); // Clear custom input on reset
+        setCustomTime('');
     };
 
     return (
