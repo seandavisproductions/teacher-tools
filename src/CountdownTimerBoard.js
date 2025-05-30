@@ -102,12 +102,15 @@ export const CountdownTimerBoard = () => {
         }
     };
 
+    // Log on component render
+  console.log(`CountdownTimerBoard Render: Session Code: ${sessionCode}, Socket connected: ${!!socket?.connected}`);
+
     const startPresetTimer = (durationSeconds) => {
-          // --- ADD THESE CONSOLE LOGS ---
-        console.log(`[CountdownTimerBoard] Preset button clicked: duration=${durationSeconds}`);
-        console.log(`[CountdownTimerBoard] Socket status (in preset): ${socket ? 'available' : 'NOT available'}`);
-        console.log(`[CountdownTimerBoard] Session Code status (in preset): ${sessionCode ? 'available' : 'NOT available'}, value:`, sessionCode);
-        // --- END ADDED CONSOLE LOGS ---
+ console.log(`--- PRESET BUTTON CLICKED ---`);
+    console.log(`Preset: Current sessionCode: ${sessionCode} (Type: ${typeof sessionCode})`);
+    console.log(`Preset: Socket status - exists: ${!!socket}, connected: ${!!socket?.connected}`);
+    console.log(`Preset: Data to emit: { sessionCode: ${sessionCode}, isRunning: true, timeLeft: ${initialTime} }`);
+
         // Stop any running local timer first if one exists
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
