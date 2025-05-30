@@ -35,10 +35,7 @@ export function TeacherView({ onResetRole }) {
     console.log('TeacherView: Auth/Session success! Setting sessionCode:', code, 'teacherId:', id);
     setSessionCode(code);
     setTeacherId(id);
-    if (socket && id && code) {
-        socket.emit('joinSession', { sessionCode: code, userId: id, role: 'teacher' });
-    }
-  }, [socket]);
+  }, []);
 
 
   return (
