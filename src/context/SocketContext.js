@@ -1,16 +1,23 @@
 // src/context/SocketContext.js
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'; // Re-added useRef
 import { io } from 'socket.io-client';
 
-// 1. CREATE THE CONTEXT OBJECT
-const SocketContext = createContext(null); // This is the object you're trying to import as GlobalSocketContext
-
+const SocketContext = createContext(null);
 const SOCKET_SERVER_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const sessionCodeRef = useRef(null);
+  const [sessionCode, setSessionCode] = useState(null); // State for sessionCode
 
+  // --- NEW: Ref to hold the latest sessionCode for callbacks ---
+  const latestSessionCodeRef = useRef(sessionCode);
+
+  // --- NEW: Effect to keep the ref updated with the latest sessionCode state ---
+  useEffect(() => {
+    latestSessionCodeRef.current = sessionCode;
+  }, [sessionCode]); // This effect runs whenever sessionCode state changes
+
+  // First useEffect: Initializes the socket connection (runs once on mount)
   useEffect(() => {
     console.log("SocketContext: Initializing Socket.IO connection to", SOCKET_SERVER_URL);
     const socketInstance = io(SOCKET_SERVER_URL, {
@@ -20,9 +27,10 @@ export const SocketProvider = ({ children }) => {
 
     socketInstance.on('connect', () => {
       console.log('SocketContext: Socket connected successfully! ID:', socketInstance.id);
-      if (sessionCodeRef.current) {
-        console.log(`SocketContext: Emitting joinSession for ${sessionCodeRef.current} after reconnect.`);
-        socketInstance.emit('joinSession', sessionCodeRef.current);
+      // --- IMPORTANT: Use the ref here to get the latest sessionCode ---
+      if (latestSessionCodeRef.current) {
+        console.log(`SocketContext: Emitting joinSession for ${latestSessionCodeRef.current} after reconnect.`);
+        socketInstance.emit('joinSession', latestSessionCodeRef.current);
       }
     });
 
@@ -48,27 +56,28 @@ export const SocketProvider = ({ children }) => {
       socketInstance.off('error');
       socketInstance.disconnect();
     };
-  }, []);
+  }, []); // Empty dependency array: runs only once to set up the socket
 
+  // Second useEffect: Emits joinSession when socket is ready AND sessionCode state changes
   useEffect(() => {
-    if (socket && socket.connected && sessionCodeRef.current) {
-      console.log(`SocketContext: Emitting joinSession for ${sessionCodeRef.current} due to sessionCode update.`);
-      socket.emit('joinSession', sessionCodeRef.current);
+    if (socket && socket.connected && sessionCode) {
+      console.log(`SocketContext: Emitting joinSession for ${sessionCode} due to sessionCode update.`);
+      socket.emit('joinSession', sessionCode);
     }
-  }, [socket, sessionCodeRef.current]);
+  }, [socket, sessionCode]); // Dependency: socket and sessionCode state
 
   const updateSessionCodeForSocket = (code) => {
-    sessionCodeRef.current = code;
+    setSessionCode(code); // This updates the state, which triggers the second useEffect
+    // The direct emit here is useful for immediate feedback, though the useEffect also covers it
     if (socket && socket.connected && code) {
-      console.log(`SocketContext: Attempting to join session ${code} via updateSessionCodeForSocket.`);
+      console.log(`SocketContext: Attempting to join session ${code} via updateSessionCodeForSocket (direct emit).`);
       socket.emit('joinSession', code);
     }
   };
 
   return (
-   <SocketContext.Provider
-      // --- MODIFIED LINE BELOW ---
-      value={{ socket, sessionCode: sessionCodeRef.current, updateSessionCodeForSocket }}
+    <SocketContext.Provider
+      value={{ socket, sessionCode, updateSessionCodeForSocket }}
     >
       {children}
     </SocketContext.Provider>
@@ -83,5 +92,4 @@ export const useSocket = () => {
   return context.socket;
 };
 
-// 2. EXPORT THE SocketContext OBJECT
-export { SocketContext }; // <--- ADD THIS LINE IF IT'S MISSING!
+export { SocketContext };
