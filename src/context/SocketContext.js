@@ -66,7 +66,10 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ socket, updateSessionCodeForSocket }}>
+   <SocketContext.Provider
+      // --- MODIFIED LINE BELOW ---
+      value={{ socket, sessionCode: sessionCodeRef.current, updateSessionCodeForSocket }}
+    >
       {children}
     </SocketContext.Provider>
   );
