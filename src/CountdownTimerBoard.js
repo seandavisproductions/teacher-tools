@@ -109,7 +109,7 @@ export const CountdownTimerBoard = () => {
  console.log(`--- PRESET BUTTON CLICKED ---`);
     console.log(`Preset: Current sessionCode: ${sessionCode} (Type: ${typeof sessionCode})`);
     console.log(`Preset: Socket status - exists: ${!!socket}, connected: ${!!socket?.connected}`);
-    console.log(`Preset: Data to emit: { sessionCode: ${sessionCode}, isRunning: true, timeLeft: ${initialTime} }`);
+    console.log(`Preset: Data to emit: { sessionCode: ${sessionCode}, isRunning: true, timeLeft: ${durationSeconds} }`);
 
         // Stop any running local timer first if one exists
         if (timerIntervalRef.current) {
