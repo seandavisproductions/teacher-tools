@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/teacher-tools/static/css/main.4048c3ee.css",
-    "main.js": "/teacher-tools/static/js/main.26617fec.js",
+    "main.js": "/teacher-tools/static/js/main.428b134f.js",
     "index.html": "/teacher-tools/index.html",
     "main.4048c3ee.css.map": "/teacher-tools/static/css/main.4048c3ee.css.map",
-    "main.26617fec.js.map": "/teacher-tools/static/js/main.26617fec.js.map"
+    "main.428b134f.js.map": "/teacher-tools/static/js/main.428b134f.js.map"
   },
   "entrypoints": [
     "static/css/main.4048c3ee.css",
-    "static/js/main.26617fec.js"
+    "static/js/main.428b134f.js"
   ]
 }
