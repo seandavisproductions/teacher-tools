@@ -103,6 +103,11 @@ export const CountdownTimerBoard = () => {
     };
 
     const startPresetTimer = (durationSeconds) => {
+          // --- ADD THESE CONSOLE LOGS ---
+        console.log(`[CountdownTimerBoard] Preset button clicked: duration=${durationSeconds}`);
+        console.log(`[CountdownTimerBoard] Socket status (in preset): ${socket ? 'available' : 'NOT available'}`);
+        console.log(`[CountdownTimerBoard] Session Code status (in preset): ${sessionCode ? 'available' : 'NOT available'}, value:`, sessionCode);
+        // --- END ADDED CONSOLE LOGS ---
         // Stop any running local timer first if one exists
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
