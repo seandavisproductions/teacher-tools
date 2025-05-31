@@ -82,6 +82,7 @@ function App() {
                   <StudentView
                     onResetRole={handleResetRole}
                     onAuthAndSessionSuccess={handleGlobalAuthSuccess}
+                    sessionCode={localStorage.getItem('sessionCode')}
                   />
                 </SocketProvider>
               ) : (

@@ -3,15 +3,26 @@ import React, { useState, useEffect, useRef, useContext } from 'react'; // ADDED
 import { TimerClock } from "./TimerClock";
 import { SocketContext } from './context/SocketContext'; // RE-ADDED this import!
 
-export const CountdownTimerBoard = () => {
-    // Get socket and sessionCode from context
-    const { socket, sessionCode } = useContext(SocketContext); // ADDED this line!
+export const CountdownTimerBoard = ({ sessionCode: propSessionCode }) => {
+    // Get socket from context and use the prop sessionCode if provided
+    const { socket, sessionCode: contextSessionCode, timerState } = useContext(SocketContext);
+    // Use the prop sessionCode if provided, otherwise fall back to the context sessionCode
+    const sessionCode = propSessionCode || contextSessionCode;
 
     const [timeLeft, setTimeLeft] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [customTime, setCustomTime] = useState('');
 
     const timerIntervalRef = useRef(null); // Ref to hold the interval ID for local countdown
+
+    // Listen for timer state updates from the context
+    useEffect(() => {
+        if (timerState) {
+            console.log('CountdownTimerBoard: Received timer state from context:', timerState);
+            setIsRunning(timerState.isRunning);
+            setTimeLeft(timerState.timeLeft);
+        }
+    }, [timerState]);
 
     // This useEffect now manages only the local countdown interval
     // IMPORTANT: For true server-client sync, you might want to adjust this to ALSO
@@ -65,11 +76,15 @@ export const CountdownTimerBoard = () => {
             }
 
             // Emit 'startTimer' to backend to START the timer
+            console.log('CountdownTimerBoard: Emitting startTimer with sessionCode:', sessionCode);
             socket.emit('startTimer', {
                 sessionCode: sessionCode, // Pass the correct session code
                 isRunning: true, // Indicate the desire to start
                 timeLeft: timeToStart // Pass the time to start from
             });
+            
+            // Request current timer state to ensure we're in sync
+            socket.emit('requestTimerState', { sessionCode });
 
             // Update local state immediately for responsiveness
             setIsRunning(true);
@@ -128,6 +143,11 @@ export const CountdownTimerBoard = () => {
                 isRunning: true,
                 timeLeft: durationSeconds
             });
+            
+            // Request current timer state to ensure we're in sync
+            setTimeout(() => {
+                socket.emit('requestTimerState', { sessionCode });
+            }, 500);
         }
     };
 
@@ -139,7 +159,8 @@ export const CountdownTimerBoard = () => {
         }
 
         // Emit 'resetTimer' to backend
-        socket.emit('resetTimer', sessionCode); // Send only the sessionCode
+        console.log('CountdownTimerBoard: Emitting resetTimer with sessionCode:', sessionCode);
+        socket.emit('resetTimer', { sessionCode }); // Send as an object for consistency
 
         // Update local state immediately for responsiveness
         if (timerIntervalRef.current) {
@@ -161,7 +182,7 @@ export const CountdownTimerBoard = () => {
                 >
                     {!isRunning ? "Start" : "Stop"}
                 </button>
-                <button onClick={handleResetTimer}>Reset</button>
+                <button className="button" onClick={handleResetTimer}>Reset</button>
             </>
 
             <TimerClock isRunning={isRunning} timeLeft={timeLeft}/>

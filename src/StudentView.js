@@ -2,13 +2,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Footer } from "./Footer";
 import { TimerClock } from "./TimerClock";
-import { useSocket } from './context/SocketContext';
+import { useSocket, SocketContext } from './context/SocketContext';
+const BACKEND_API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'; // Define it at the top with other constants
 
-export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { // <-- Ensure onResetRole is accepted here
+export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => {
+  console.log("StudentView: Initializing with propSessionCode:", propSessionCode);
   const [inputCode, setInputCode] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [currentSessionCode, setCurrentSessionCode] = useState(propSessionCode);
-
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [objectiveText, setObjectiveText] = useState("");
@@ -21,19 +21,87 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
   const lastServerSyncTimeRef = useRef(Date.now());
   const translationRequestTimeoutRef = useRef(null);
 
-  const socket = useSocket();
+  // Get socket and context safely
+  let socket = null;
+  let updateSessionCodeForSocket = null;
+  let contextTimeLeft = 0;
+  let contextIsRunning = false;
+  
+  try {
+    socket = useSocket();
+    const context = React.useContext(SocketContext);
+    if (context) {
+      updateSessionCodeForSocket = context.updateSessionCodeForSocket;
+      contextTimeLeft = context.timeLeft;
+      contextIsRunning = context.isTimerRunning;
+    }
+  } catch (error) {
+    console.warn("StudentView: Error accessing socket or context:", error.message);
+  }
+  
+  const [currentSessionCode, setCurrentSessionCode] = useState(propSessionCode);
+  
+  // Handle prop session code changes
+  useEffect(() => {
+    if (propSessionCode) {
+      setCurrentSessionCode(propSessionCode);
+      setIsAuthorized(true);
+      // Also update the session code in the socket context
+      if (updateSessionCodeForSocket) {
+        updateSessionCodeForSocket(propSessionCode);
+      }
+    }
+  }, [propSessionCode, updateSessionCodeForSocket]);
 
   useEffect(() => {
-    if (!socket || !currentSessionCode) {
-      console.warn("StudentView: Socket or sessionCode not available (yet).");
+    if (!socket) {
+      console.warn("StudentView: Socket not available (yet).");
+      return;
+    }
+    
+    if (!currentSessionCode) {
+      console.warn("StudentView: Session code not available (yet).");
       return;
     }
 
     console.log('StudentView: Setting up Socket.IO listeners for session:', currentSessionCode);
 
+    socket.on("timerState", (data) => {
+      console.log('StudentView: Received timerState from server:', data);
+      // Handle both timeLeft and remainingTime formats
+      const serverTimeLeft = data.remainingTime ? Math.floor(data.remainingTime / 1000) : data.timeLeft;
+      const serverIsRunning = data.isRunning;
+
+      setIsRunning(serverIsRunning);
+      setTimeLeft(serverTimeLeft);
+      lastServerSyncTimeRef.current = Date.now();
+
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+
+      if (serverIsRunning && serverTimeLeft > 0) {
+        timerIntervalRef.current = setInterval(() => {
+          const elapsedTimeSinceLastSync = Math.floor((Date.now() - lastServerSyncTimeRef.current) / 1000);
+          const newTimeLeft = Math.max(0, serverTimeLeft - elapsedTimeSinceLastSync);
+
+          if (newTimeLeft <= 0) {
+            setTimeLeft(0);
+            setIsRunning(false);
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          } else {
+            setTimeLeft(newTimeLeft);
+          }
+        }, 1000);
+      }
+    });
+
     socket.on("timerUpdate", (data) => {
       console.log('StudentView: Received timerUpdate from server:', data);
-      const { isRunning: serverIsRunning, timeLeft: serverTimeLeft } = data;
+      // Handle both timeLeft and remainingTime formats
+      const serverTimeLeft = data.remainingTime ? Math.floor(data.remainingTime / 1000) : data.timeLeft;
+      const serverIsRunning = data.isRunning;
 
       setIsRunning(serverIsRunning);
       setTimeLeft(serverTimeLeft);
@@ -106,6 +174,7 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
     return () => {
       console.log("StudentView: Cleaning up Socket.IO listeners.");
       if (socket) {
+        socket.off("timerState");
         socket.off("timerUpdate");
         socket.off("timerReset");
         socket.off("objectiveUpdate");
@@ -123,11 +192,20 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
   }, [socket, currentSessionCode, studentLanguage]);
 
   useEffect(() => {
-    if (socket && socket.connected && currentSessionCode) {
-      socket.emit("joinSession", currentSessionCode);
-      console.log("StudentView: Emitted joinSession (code changed or socket connected):", currentSessionCode);
+    if (socket && socket.connected && currentSessionCode && updateSessionCodeForSocket) {
+      // Use the context function to update the session code
+      updateSessionCodeForSocket(currentSessionCode);
+      console.log("StudentView: Updated session code in context:", currentSessionCode);
+      
+      // Request current timer state
+      setTimeout(() => {
+        if (socket && socket.connected) {
+          console.log("StudentView: Requesting timer state for session:", currentSessionCode);
+          socket.emit('requestTimerState', { sessionCode: currentSessionCode });
+        }
+      }, 500);
     }
-  }, [socket, currentSessionCode]);
+  }, [socket, currentSessionCode, updateSessionCodeForSocket]);
 
   const requestTranslation = (text, sourceLanguageCode, targetLanguageCode) => {
       if (socket && socket.connected && text && sourceLanguageCode && targetLanguageCode) {
@@ -138,10 +216,11 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
       }
   };
 
-  const handleSubmit = async () => {
+    const handleSubmit = async () => {
     console.log("StudentView: Input Code:", inputCode);
     try {
-      const response = await fetch(`https://teacher-toolkit-back-end.onrender.com/session/validate`, {
+      // --- USE IT HERE IN THE FETCH CALL ---
+      const response = await fetch(`${BACKEND_API_URL}/session/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionCode: inputCode.trim() }),
@@ -149,8 +228,11 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
       const data = await response.json();
 
       if (response.ok && data.success) {
+        const validCode = inputCode.trim();
         setIsAuthorized(true);
-        setCurrentSessionCode(inputCode.trim());
+        setCurrentSessionCode(validCode);
+        // Also update the session code in the socket context
+        updateSessionCodeForSocket(validCode);
       } else {
         alert(data.error || "Invalid code. Please try again.");
       }
@@ -185,40 +267,46 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
     <div>
       {/* NEW: Place the Change Role button here, accessible in both views */}
       {onResetRole && (
-          <button onClick={onResetRole} className="button change-role-button student-view-change-role">
+        <div className="countdown-container">
+          <button onClick={onResetRole} className="button">
               Change Role
           </button>
+           <p>Welcome to the Student View for session: **{currentSessionCode}**</p>
+          </div>
       )}
 
       {!isAuthorized ? (
-        <div className="student-login-container">
-          <img className="styled-image" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
+        <div className="teacher-app">
+          <img className="styled-image" src={`${process.env.PUBLIC_URL}/logo_teacher_toolkit.png`} alt="Teacher Toolkit"/>
           <h2>Enter Session Code</h2>
+          
           <input
             type="text"
-            className="input-code-box"
+            className="input-box"
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
             placeholder="e.g., 0FNVTP"
           />
-          <button className="submit-button" onClick={handleSubmit}>Join Session</button>
+          <button className="button" onClick={handleSubmit}>Join Session</button>
         </div>
       ) : (
         <div className="student-app">
+         
           {/* Student Header - you might want to consider extracting this into its own component later */}
           <div className="header">
             <button onClick={toggleFullscreen} className="button-fullscreen">
-              <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Fullscreen" />
+              <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen_Logo.png`} alt="Fullscreen" />
             </button>
-            <img className="styled-image logo" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
-            <div className="objective-display">
-                <p>Objective: {objectiveText || "Waiting for teacher to set objective..."}</p>
+            <img className="styled-image logo" src={`${process.env.PUBLIC_URL}/teacher_toolkit_logo_only.png`} alt="Teacher Toolkit"/>
+            <div className="objective-box">
+                <h2>Objective: {objectiveText || "Waiting for teacher to set objective..."}</h2>
             </div>
-            <TimerClock timeLeft={timeLeft} isRunning={isRunning} />
+            
           </div>
 
           {/* Student's Subtitle Area */}
-          <div className="student-subtitle-area">
+          <div className="countdown-container">
+            <TimerClock timeLeft={timeLeft} isRunning={isRunning} />
             <select value={studentLanguage} onChange={(e) => setStudentLanguage(e.target.value)}>
               {studentLanguageOptions.map(lang => (
                 <option key={lang.value} value={lang.value}>{lang.label}</option>
@@ -239,8 +327,7 @@ export const StudentView = ({ sessionCode: propSessionCode, onResetRole }) => { 
               </div>
           )}
 
-          <p>Welcome to the Student View for session: **{currentSessionCode}**</p>
-
+          
           <Footer />
         </div>
       )}

@@ -72,7 +72,7 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
             // Make API call to your backend endpoint for generating a new code
             // IMPORTANT: Ensure this URL matches your Render backend URL + the new route path
             // Example: 'https://your-backend-service.onrender.com/auth/generate-new-session-code'
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/generate-new-session-code`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/generate-new-session-code`, {
                 method: 'POST', // Use POST as you are changing state on the server
                 headers: {
                     'Content-Type': 'application/json',
@@ -103,11 +103,11 @@ export function Header({ sessionCode, setSessionCode, teacherId, setTeacherId, o
             <div className="header">
                 {/* Fullscreen button */}
                 <button onClick={toggleFullscreen} className="button-fullscreen">
-                    <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Fullscreen" />
+                    <img className="styled-image fullscreen" src={`${process.env.PUBLIC_URL}/FullScreen_Logo.png`} alt="Full Screen Logo"/>
                 </button>
 
                 {/* Logo */}
-                <img className="styled-image logo" src={`${process.env.PUBLIC_URL}/logo teacher toolkit.png`} alt="Teacher Toolkit"/>
+                <img className="styled-image logo" src={`${process.env.PUBLIC_URL}/teacher_toolkit_logo_only.png`} alt="Teacher Toolkit"/>
 
                 {/* Objective Input */}
                 <input

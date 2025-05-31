@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 
-const BACKEND_URL = "https://teacher-toolkit-back-end.onrender.com";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:3001";
 
 export function Login({ onAuthSuccess, closeModal, onSwitchToRegister }) {
   const [email, setEmail] = useState('');

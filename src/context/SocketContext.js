@@ -1,36 +1,48 @@
 // src/context/SocketContext.js
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react'; // Re-added useRef
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
-const SOCKET_SERVER_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+const SOCKET_SERVER_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [sessionCode, setSessionCode] = useState(null); // State for sessionCode
+  const [timerState, setTimerState] = useState({ timeLeft: 0, isRunning: false }); // Add timer state
 
-  // --- NEW: Ref to hold the latest sessionCode for callbacks ---
   const latestSessionCodeRef = useRef(sessionCode);
+  const joinedSessionsRef = useRef({});
 
-  // --- NEW: Effect to keep the ref updated with the latest sessionCode state ---
   useEffect(() => {
     latestSessionCodeRef.current = sessionCode;
-  }, [sessionCode]); // This effect runs whenever sessionCode state changes
+    // Reset joined sessions when socket disconnects
+    socket?.on('disconnect', () => {
+      joinedSessionsRef.current = {};
+    });
+  }, [sessionCode, socket]);
 
-  // First useEffect: Initializes the socket connection (runs once on mount)
   useEffect(() => {
     console.log("SocketContext: Initializing Socket.IO connection to", SOCKET_SERVER_URL);
     const socketInstance = io(SOCKET_SERVER_URL, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     socketInstance.on('connect', () => {
       console.log('SocketContext: Socket connected successfully! ID:', socketInstance.id);
-      // --- IMPORTANT: Use the ref here to get the latest sessionCode ---
       if (latestSessionCodeRef.current) {
-        console.log(`SocketContext: Emitting joinSession for ${latestSessionCodeRef.current} after reconnect.`);
-        socketInstance.emit('joinSession', latestSessionCodeRef.current);
+        console.log(`DEBUG: Emitting joinSession from on('connect'). Code: ${latestSessionCodeRef.current}`);
+        // Get the token from localStorage
+        const token = localStorage.getItem('token') || 'missing';
+        // Send both the session code and token
+        socketInstance.emit('joinSession', { sessionCode: latestSessionCodeRef.current, token });
+        // Mark this session as joined
+        joinedSessionsRef.current[latestSessionCodeRef.current] = true;
+      } else {
+        console.log('SocketContext: Socket connected, but no sessionCode to join yet (from on("connect")).');        
       }
     });
 
@@ -56,28 +68,87 @@ export const SocketProvider = ({ children }) => {
       socketInstance.off('error');
       socketInstance.disconnect();
     };
-  }, []); // Empty dependency array: runs only once to set up the socket
+  }, []);
 
-  // Second useEffect: Emits joinSession when socket is ready AND sessionCode state changes
   useEffect(() => {
     if (socket && socket.connected && sessionCode) {
-      console.log(`SocketContext: Emitting joinSession for ${sessionCode} due to sessionCode update.`);
-      socket.emit('joinSession', sessionCode);
+      // Only join if we haven't joined this session before
+      if (!joinedSessionsRef.current[sessionCode]) {
+        console.log(`DEBUG: Emitting joinSession from sessionCode useEffect. Code: ${sessionCode}`);
+        const token = localStorage.getItem('token') || 'missing';
+        socket.emit('joinSession', { sessionCode, token });
+        joinedSessionsRef.current[sessionCode] = true;
+      } else {
+        console.log(`DEBUG: Already joined session ${sessionCode}, not re-joining`);
+      }
+      
+      // Set up listeners for timer events
+      socket.on('timerState', (data) => {
+        console.log('SocketContext: Received timerState from server:', data);
+        // Convert milliseconds to seconds if needed
+        const timeLeft = data.remainingTime ? Math.floor(data.remainingTime / 1000) : data.timeLeft;
+        setTimerState({ 
+          isRunning: data.isRunning, 
+          timeLeft: timeLeft
+        });
+      });
+      
+      socket.on('timerUpdate', (data) => {
+        console.log('SocketContext: Received timerUpdate from server:', data);
+        // Convert milliseconds to seconds if needed
+        const timeLeft = data.remainingTime ? Math.floor(data.remainingTime / 1000) : data.timeLeft;
+        setTimerState({ 
+          isRunning: data.isRunning, 
+          timeLeft: timeLeft
+        });
+      });
+      
+      socket.on('timerReset', () => {
+        console.log('SocketContext: Received timerReset from server');
+        setTimerState({ timeLeft: 0, isRunning: false });
+      });
+      
+      // Request current timer state
+      socket.emit('requestTimerState', { sessionCode });
+      
+      return () => {
+        socket.off('timerState');
+        socket.off('timerUpdate');
+        socket.off('timerReset');
+      };
     }
-  }, [socket, sessionCode]); // Dependency: socket and sessionCode state
+  }, [socket, sessionCode]);
 
   const updateSessionCodeForSocket = (code) => {
-    setSessionCode(code); // This updates the state, which triggers the second useEffect
-    // The direct emit here is useful for immediate feedback, though the useEffect also covers it
-    if (socket && socket.connected && code) {
-      console.log(`SocketContext: Attempting to join session ${code} via updateSessionCodeForSocket (direct emit).`);
-      socket.emit('joinSession', code);
+    if (typeof code === 'string' && code.length > 0) {
+      setSessionCode(code);
+      if (socket && socket.connected) {
+        // Only join if we haven't joined this session before
+        if (!joinedSessionsRef.current[code]) {
+          console.log(`DEBUG: Emitting joinSession from updateSessionCodeForSocket. Code: ${code}`);
+          const token = localStorage.getItem('token') || 'missing';
+          socket.emit('joinSession', { sessionCode: code, token });
+          joinedSessionsRef.current[code] = true;
+        } else {
+          console.log(`DEBUG: Already joined session ${code}, not re-joining`);
+        }
+      }
+    } else {
+      console.warn("SocketContext: Attempted to set/update sessionCode with an invalid value:", code);
+      setSessionCode(null);
     }
   };
 
   return (
     <SocketContext.Provider
-      value={{ socket, sessionCode, updateSessionCodeForSocket }}
+      value={{ 
+        socket, 
+        sessionCode, 
+        updateSessionCodeForSocket,
+        timerState,
+        isTimerRunning: timerState.isRunning,
+        timeLeft: timerState.timeLeft
+      }}
     >
       {children}
     </SocketContext.Provider>

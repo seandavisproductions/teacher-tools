@@ -10,7 +10,7 @@ export function LoadingSpinner() {
     return (
     <>
         <div>
-            {spinner ? (<img src={`${process.env.PUBLIC_URL}/FullScreen Logo.png`} alt="Loading..."/>) : (<h3>{text}</h3>)}
+            {spinner ? (<img src={`${process.env.PUBLIC_URL}/Pacman_Spinner.gif`} alt="Loading..."/>) : (<h3>{text}</h3>)}
         </div>
     </>)
 }
